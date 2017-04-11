@@ -5,6 +5,8 @@ var HtmlWebpackPluginConfig = new HtmlWebpackPlugin({
   inject: 'body'
 })
 
+var webpack = require('webpack');
+
 module.exports = {
   entry: [
     './app/index.js'
@@ -15,7 +17,25 @@ module.exports = {
   },
   module: {
     loaders: [
-      {test: /\.js$/, exclude: /node_modules/, loader: "babel-loader"}
+      {
+        test: /\.js$/,
+        exclude: /node_modules/,
+        loader: "babel-loader"
+      },
+      {
+        test: /\.(jpe?g|png|gif|svg)$/i,
+        loaders: [
+          'file-loader?name=/app/images/[name].[ext]'
+        ]
+      },
+      {
+        test: /\.css$/,
+        loader: "style-loader"
+      },
+      {
+        test: /\.css$/,
+        loader: "css-loader"
+      }
     ]
   },
   plugins: [HtmlWebpackPluginConfig]

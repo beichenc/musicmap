@@ -14,7 +14,8 @@ var cookieParser = require('cookie-parser');
 
 var client_id = '3481c5ebeb68422e98110dd22f644daf'; // Your client id
 var client_secret = '5a02f4d8b20d467d96a58a39c59d1a13'; // Your secret
-var redirect_uri = 'http://localhost:8888/callback'; // Your redirect uri
+// OBS change back to http://localhost:8888/callback or the real website later when uploaded, e.g. heroku.
+var redirect_uri = 'http://192.168.1.172:8888/callback'; // Your redirect uri
 
 /**
  * Generates a random string containing numbers and letters
@@ -45,18 +46,21 @@ app.get('/login', function(req, res) {
   res.cookie(stateKey, state);
 
   // your application requests authorization
-  var scope = 'user-read-private user-read-email';
+  var scope = 'user-read-private user-read-email user-read-playback-state';
   res.redirect('https://accounts.spotify.com/authorize?' +
     querystring.stringify({
       response_type: 'code',
       client_id: client_id,
       scope: scope,
       redirect_uri: redirect_uri,
-      state: state
+      state: state,
+      show_dialog: true
     }));
 });
 
 app.get('/callback', function(req, res) {
+
+  console.log("entered callback get");
 
   // your application requests refresh and access tokens
   // after checking the state parameter
@@ -103,11 +107,13 @@ app.get('/callback', function(req, res) {
         });
 
         // we can also pass the token to the browser to make requests from there
-        res.redirect('/#' +
-          querystring.stringify({
-            access_token: access_token,
-            refresh_token: refresh_token
-          }));
+        // res.redirect('/#' +
+        //   querystring.stringify({
+        //     access_token: access_token,
+        //     refresh_token: refresh_token
+        //   }));
+        console.log("got to redirect");
+        res.redirect(`/#/${access_token}/${refresh_token}`);
       } else {
         res.redirect('/#' +
           querystring.stringify({

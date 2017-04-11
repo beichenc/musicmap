@@ -1,0 +1,89 @@
+/*var imageUrl = require('../images/record.jpg');*/
+
+@media all and (min-device-width: 800px) {
+  .loginElement {
+    margin-top: 100px;
+  }
+}
+
+@media all and (max-device-width: 800px) {
+  .loginElement {
+    margin-top: 50px;
+  }
+}
+
+.customButtonSLogIn {
+  margin-top: 100px;
+  background: none;
+  border-radius: 24px;
+}
+
+.customButtonLLogIn {
+  margin-top: 50px;
+  background: none;
+  border-radius: 24px;
+}
+
+.customButtonModal {
+  border-radius: 24px;
+}
+
+.transparentBg {
+  background: transparent;
+}
+
+.space {
+  margin-top: 25px;
+}
+
+.body {
+  text-align: center;
+  background-image: url('../images/record.jpg');
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  position: fixed;
+  color: white;
+  font-family: "Open Sans";
+}
+
+.modal {
+  font-family: 'Open Sans';
+  color: #424242;
+}
+
+.modalColor {
+  background-color: #9e9e9e;
+  color: white;
+}
+
+.textAlignCenter: {
+  text-align: center;
+}
+
+.textOverflow {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 500px;
+}
+
+.displayNone {
+  display: none;
+}
+
+
+.height100 {
+  height: 100%;
+  margin: 0;
+}
+
+.marginTop50 {
+  margin-top: 50px;
+}
+
+.popupLink {
+  display: block;
+  margin-top: 20px;
+  cursor: pointer;
+}
