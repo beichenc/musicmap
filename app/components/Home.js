@@ -1,28 +1,24 @@
-var React = require('react');
+var React = require('react')
 var styles = require('../styles/styles.css');
-var Modal = require('react-bootstrap').Modal;
-var Button = require('react-bootstrap').Button;
+// var markerIcon = require('../images/markerBlue.png');
 
 var Home = React.createClass({
 
-  contextTypes: {
-    router: React.PropTypes.object.isRequired
-  },
-
   getInitialState: function() {
     return {
-      accountDetails: {},
-      oauthDetails: {}
+      accountDetails: {
+        item: {}
+      },
+      oauthDetails: {},
+      isLoggedIn: false
     }
   },
-  componentDidMount: function() {
 
+  componentDidMount: function() {
+    var menu = require('../js/menu.js');
+    var that = this;
 
     // Spotify
-
-    var that = this
-    console.log("component did mount")
-
     var access_token = this.props.routeParams.access_token,
         refresh_token = this.props.routeParams.refresh_token,
         error = this.props.routeParams.error;
@@ -47,45 +43,61 @@ var Home = React.createClass({
               'Authorization': 'Bearer ' + access_token
             },
             success: function(response) {
-
-              console.log(response);
-
               that.setState({
                 accountDetails: response
               })
 
-              console.log(response);
-              console.log(response.item.name);
+              // $('#login').hide();
+              // $('#loggedin').show();
 
-              $('#login').hide();
-              $('#loggedin').show();
             }
         });
       } else {
           // render initial screen
-          $('#login').show();
-          $('#loggedin').hide();
+          // $('#login').show();
+          // $('#loggedin').hide();
+
+          // Redirect user to login page - don't really know if this works cause I dunno how to test it
+          //window.location.href = '#/';
       }
     }
     // For testing - delete later
     // $('#login').hide();
     // $('#loggedin').show();
+    //
+    // this.setState({
+    //  isLoggedIn: true
+    // })
   },
+
+
 
   render: function() {
     return (
-      <div className="body">
-        <div className="container">
-          <div id="login" className="displayNone">
-            <h1 className="loginElement">Log in with your Spotify account</h1>
-            <a href="/login" className="btn btn-lg btn-success customButtonSLogIn">Log in</a>
-          </div>
+      <div className="wrapperWithoutBg">
+        <div id="loggedin">
+          <div id="user-profile">
+            <h1 className="currentlyPlaying">Currently playing: {this.state.accountDetails.item.name}</h1>
 
-
-          <div id="loggedin" className="displayNone">
-            <div id="user-profile">
-              {this.state.accountDetails.item &&<h1 className="loginElement">Currently playing: {this.state.accountDetails.item.name}</h1>}
+            <div id="o-wrapper" className="o-wrapper">
+              <div className="c-buttons">
+                <button id="c-button--slide-left" className="c-button btn btn-lg btn-success">More</button>
+                <button id="c-button--slide-right" className="c-button btn btn-lg btn-success">Map!</button>
+              </div>
             </div>
+
+            <div id="c-mask" className="c-mask"></div>
+
+            <nav id="c-menu--slide-left" className="c-menu c-menu--slide-left">
+              <button className="c-menu__close">&larr; Close Menu</button>
+              <ul className="c-menu__items">
+                <li className="c-menu__item"><a href="#" className="c-menu__link">Filters</a></li>
+                <li className="c-menu__item"><a href="#" className="c-menu__link">Search location</a></li>
+                <li className="c-menu__item"><a href="#" className="c-menu__link">Playlists</a></li>
+                <li className="c-menu__item"><a href="#" className="c-menu__link">About</a></li>
+              </ul>
+            </nav>
+
           </div>
         </div>
       </div>

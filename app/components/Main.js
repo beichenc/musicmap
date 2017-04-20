@@ -1,7 +1,7 @@
 var React = require('react')
 
 
-var Body = React.createClass({
+var Main = React.createClass({
   render: function() {
     return (
       <div className="main-container">
@@ -11,4 +11,4 @@ var Body = React.createClass({
   }
 })
 
-module.exports = Body;
+module.exports = Main;
