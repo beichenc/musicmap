@@ -55,7 +55,7 @@ class Home extends React.Component {
     //   position: {lat: -34.397, lng: 150.644},
     //   map: map
     // });
-    infoWindow = new google.maps.InfoWindow;
+    var infoWindow = new google.maps.InfoWindow;
 
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(function(position) {
