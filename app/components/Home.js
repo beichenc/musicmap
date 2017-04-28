@@ -51,10 +51,11 @@ class Home extends React.Component {
       zoom: 4,
       center: {lat: -34.397, lng: 150.644}
     });
-    var marker = new google.maps.Marker({
-      position: {lat: -34.397, lng: 150.644},
-      map: map
-    });
+    // var marker = new google.maps.Marker({
+    //   position: {lat: -34.397, lng: 150.644},
+    //   map: map
+    // });
+    infoWindow = new google.maps.InfoWindow;
 
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(function(position) {
