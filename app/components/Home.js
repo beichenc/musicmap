@@ -116,9 +116,6 @@ class Home extends React.Component {
                   url: response.item.href,
                   success: function(response2){
                     console.log(response2);
-                    // that.setState({
-                    //   songimg: response2.album.images[2].url
-                    // })
                   }
                 })
               that.setState({
