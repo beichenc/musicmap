@@ -18,6 +18,7 @@ class Home extends React.Component {
       songimg: "",
       genres: [],
       artist: "",
+      username: "",
       oauthDetails: {},
       isLoggedIn: false,
       pos: {}
@@ -26,7 +27,7 @@ class Home extends React.Component {
   mapSong() {
     var currentdate = new Date();
     firebase.database().ref('marker/').push({
-      username: "",
+      username: this.state.username,
       songname: this.state.accountDetails.item.name,
       artist: this.state.artist,
       genres: this.state.genres,
@@ -119,52 +120,40 @@ class Home extends React.Component {
             success: function(response) {
               console.log(response);
               that.setState({
-                accountDetails: response
+                accountDetails: response,
+                songimg: response.item.album.images[2].url,
+                artist: response.item.artists[0].name
               })
-              // Track details
               $.ajax({
-                  url: response.item.href,
-                  success: function(trackDetails){
-                    console.log(trackDetails);
-                    that.setState({
-                      songimg: trackDetails.album.images[2].url,
-                      artist: trackDetails.artists[0].name
-                    })
-                    $.ajax({
-                      url: trackDetails.artists[0].href,
-                      success: function(artistDetails) {
-                        console.log(artistDetails);
-                        that.setState({
-                          genres: artistDetails.genres
-                        })
-                      }
-                    })
-                  }
-                })
-
-
-              // $('#login').hide();
-              // $('#loggedin').show();
+                url: response.item.artists[0].href,
+                success: function(artistDetails) {
+                  console.log(artistDetails);
+                  that.setState({
+                    genres: artistDetails.genres
+                  })
+                }
+              })
 
             }
         });
 
-      } else {
-          // render initial screen
-          // $('#login').show();
-          // $('#loggedin').hide();
+        $.ajax({
+          url: 'https://api.spotify.com/v1/me',
+          headers: {
+            'Authorization': 'Bearer ' + access_token
+          },
+          success: function(response) {
+            that.setState({
+              username: response.id
+            })
+          }
+        })
 
+      } else {
           // Redirect user to login page - don't really know if this works cause I dunno how to test it
           //window.location.href = '#/';
       }
     }
-    // For testing - delete later
-    // $('#login').hide();
-    // $('#loggedin').show();
-    //
-    // this.setState({
-    //  isLoggedIn: true
-    // })
   }
 
   render() {
