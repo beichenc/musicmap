@@ -67,7 +67,9 @@ class Home extends React.Component {
             pos: pos
           }
         })
-        infoWindow = new google.maps.InfoWindow;
+        infoWindow = new google.maps.InfoWindow({
+          content: '<p className='infoWindow'> Location found. </p>'
+        })
         infoWindow.setPosition(pos);
         infoWindow.setContent('Location found.');
         infoWindow.open(map);
@@ -112,7 +114,7 @@ class Home extends React.Component {
                   url: response.item.href,
                   success: function(response2){
                     that.setState({
-                      songimg: response2.images[2].url
+                      songimg: response2.album.images[2].url
                     })
                   }
                 })
