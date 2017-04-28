@@ -32,6 +32,6 @@
   },
   "scripts": {
     "production": "webpack -p",
-    "start": "webpack-dev-server"
+    "start": "node dist/app.js"
   }
 }
