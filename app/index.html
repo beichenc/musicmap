@@ -12,8 +12,29 @@
 
   </head>
   <body>
+
+    <!--Map-->
     <div id="app"></div>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/2.0.0-alpha.1/handlebars.min.js"></script>
-    <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+    <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBdyz8g2JZGAxvhYWo2k_99zl44tHyYO4g">
+    </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/2.0.0-alpha.1/handlebars.min.js"></script>
+    <script src="https://code.jquery.com/jquery-1.10.1.min.js"></script>
+    <!--Firebase-->
+    <script src="https://www.gstatic.com/firebasejs/3.9.0/firebase.js"></script>
+    <script>
+      // Initialize Firebase
+      var config = {
+        apiKey: "AIzaSyDOXSmCfHUy94XS_EDIanszUgz6eFot_XQ",
+        authDomain: "music-map-13b92.firebaseapp.com",
+        databaseURL: "https://music-map-13b92.firebaseio.com",
+        projectId: "music-map-13b92",
+        storageBucket: "music-map-13b92.appspot.com",
+        messagingSenderId: "895899292862"
+      };
+      firebase.initializeApp(config);
+    </script>
   </body>
+
 </html>
