@@ -53,7 +53,7 @@ class Home extends React.Component {
     var infoWindow = new google.maps.InfoWindow;
 
     var map = new google.maps.Map(document.getElementById('map'), {
-      zoom: 4,
+      zoom: 15,
       center: {lat: -34.397, lng: 150.644}
     });
 
