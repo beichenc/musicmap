@@ -15,7 +15,9 @@ class Home extends React.Component {
       accountDetails: {
         item: {}
       },
-      songimg:"",
+      songimg: "",
+      genres: [],
+      artist: "",
       oauthDetails: {},
       isLoggedIn: false,
       pos: {}
@@ -26,8 +28,8 @@ class Home extends React.Component {
     firebase.database().ref('marker/').push({
       username: "",
       songname: this.state.accountDetails.item.name,
-      artist: "",
-      genre: "",
+      artist: this.state.artist,
+      genres: this.state.genres,
       songimg: this.state.songimg,
       year: currentdate.getFullYear(),
       month:currentdate.getMonth()+1,
@@ -108,24 +110,38 @@ class Home extends React.Component {
 
         console.log("access token retrieved")
 
+        // Currently playing song
         $.ajax({
             url: 'https://api.spotify.com/v1/me/player/currently-playing',
             headers: {
               'Authorization': 'Bearer ' + access_token
             },
             success: function(response) {
-              $.ajax({
-                  url: response.item.href,
-                  success: function(response2){
-                    console.log(response2);
-                    that.setState({
-                      songimg: response2.album.images[2].url
-                    })
-                  }
-                })
+              console.log(response);
               that.setState({
                 accountDetails: response
               })
+              // Track details
+              $.ajax({
+                  url: response.item.href,
+                  success: function(trackDetails){
+                    console.log(trackDetails);
+                    that.setState({
+                      songimg: trackDetails.album.images[2].url,
+                      artist: trackDetails.artists[0].name
+                    })
+                    $.ajax({
+                      url: trackDetails.artists[0].href,
+                      success: function(artistDetails) {
+                        console.log(artistDetails);
+                        that.setState({
+                          genres: artistDetails.genres
+                        })
+                      }
+                    })
+                  }
+                })
+
 
               // $('#login').hide();
               // $('#loggedin').show();
