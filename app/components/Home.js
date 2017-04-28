@@ -13,6 +13,7 @@ class Home extends React.Component {
       accountDetails: {
         item: {}
       },
+      songimg:"",
       oauthDetails: {},
       isLoggedIn: false,
       pos: {}
@@ -25,7 +26,7 @@ class Home extends React.Component {
     songname: this.state.accountDetails.item.name,
     artist: "",
     genre: "",
-    songimg: "imageUrl",
+    songimg: this.state.songimg,
     year: currentdate.getFullYear(),
     month:currentdate.getMonth()+1,
     day:currentdate.getDate(),
@@ -44,14 +45,11 @@ class Home extends React.Component {
   }
 
   componentDidMount() {
+    var infoWindow = new google.maps.InfoWindow;
 
     var map = new google.maps.Map(document.getElementById('map'), {
       zoom: 4,
       center: {lat: -34.397, lng: 150.644}
-    });
-    var marker = new google.maps.Marker({
-      position: {lat: -34.397, lng: 150.644},
-      map: map
     });
 
     if (navigator.geolocation) {
@@ -60,13 +58,16 @@ class Home extends React.Component {
           lat: position.coords.latitude,
           lng: position.coords.longitude
         };
-
+        var marker = new google.maps.Marker({
+          position: pos,
+          map:map
+        });
         this.setState(function() {
           return {
             pos: pos
           }
         })
-
+        infoWindow = new google.maps.InfoWindow;
         infoWindow.setPosition(pos);
         infoWindow.setContent('Location found.');
         infoWindow.open(map);
@@ -107,6 +108,14 @@ class Home extends React.Component {
               'Authorization': 'Bearer ' + access_token
             },
             success: function(response) {
+              $.ajax({
+                  url: response.item.href,
+                  success: function(response2){
+                    that.setState({
+                      songimg: response2.images[2].url
+                    })
+                  }
+                })
               that.setState({
                 accountDetails: response
               })
@@ -116,6 +125,7 @@ class Home extends React.Component {
 
             }
         });
+
       } else {
           // render initial screen
           // $('#login').show();
