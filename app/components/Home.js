@@ -63,7 +63,10 @@ class Home extends React.Component {
           lat: position.coords.latitude,
           lng: position.coords.longitude
         };
-
+        var marker = new google.maps.Marker({
+          position: pos,
+          map: map
+        });
         this.setState(function() {
           return {
             pos: pos
