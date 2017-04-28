@@ -76,7 +76,6 @@ class Home extends React.Component {
           content: "<p className='infoWindow'> Location found. </p>"
         })
         infoWindow.setPosition(pos);
-        infoWindow.setContent('Location found.');
         infoWindow.open(map);
         map.setCenter(pos);
       }.bind(this), function() {
