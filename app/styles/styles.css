@@ -337,6 +337,11 @@ body.has-active-menu {
   font-family: Roboto;
 }
 
+/* InfoWindow */
+.infoWindow{
+  color: black;
+}
+
 #pac-container {
   padding-bottom: 12px;
   margin-right: 12px;

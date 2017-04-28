@@ -69,7 +69,9 @@ class Home extends React.Component {
             pos: pos
           }
         })
-        infoWindow = new google.maps.InfoWindow;
+        infoWindow = new google.maps.InfoWindow({
+          content: '<p className='infoWindow'> Location found. </p>'
+        })
         infoWindow.setPosition(pos);
         infoWindow.setContent('Location found.');
         infoWindow.open(map);
