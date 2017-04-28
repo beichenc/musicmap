@@ -26,7 +26,7 @@ class Home extends React.Component {
     this.map = {}
   }
 
-  setMarkers(map) {
+  setMarkers(map, mappedSong) {
     // Adds markers to the map.
 
     // Marker sizes are expressed as a Size of X,Y where the origin of the image
@@ -35,7 +35,7 @@ class Home extends React.Component {
     // Origins, anchor positions and coordinates of the marker increase in the X
     // direction to the right and in the Y direction down.
     var image = {
-      url: this.state.songimg,
+      url: mappedSong.songimg,
       // This marker is 20 pixels wide by 32 pixels high.
       size: new google.maps.Size(64, 64),
       // The origin for this image is (0, 0).
@@ -46,23 +46,38 @@ class Home extends React.Component {
     // Shapes define the clickable region of the icon. The type defines an HTML
     // <area> element 'poly' which traces out a polygon as a series of X,Y points.
     // The final coordinate closes the poly by connecting to the first coordinate.
-    var shape = {
-      coords: [1, 1, 1, 20, 18, 20, 18, 1],
-      type: 'poly'
-    };
+    // var shape = {
+    //   coords: [1, 1, 1, 20, 18, 20, 18, 1],
+    //   type: 'poly'
+    // };
     var marker = new google.maps.Marker({
-      position: this.state.pos,
+      position: {lat: mappedSong.lat ,lng: mappedSong.lng},
       map: map,
       icon: image,
-      shape: shape,
-      title: this.state.accountDetails.item.name
+      // shape: shape,
+      title: mappedSong.songname
     });
+    console.log(marker)
+
+    var genres ="";
+    mappedSong.genres.map(function(genre){
+      genres = genres + genre;
+      genres = genres + ", ";
+    })
+    genres = genres.substring(0, genres.length-2)
+    var contentString = "<div style='color: black;'><div>"+mappedSong.songname+"</div><div><ul><li>Artist: "+mappedSong.artist+"</li><li>Genre: "+ genres +"</li><li>Mapped by: "+mappedSong.username+"</li><li>Date: "+mappedSong.year+"."+mappedSong.month+"."+mappedSong.day+"</li></ul></div><a href='"+mappedSong.uri+"'><button>Listen</button></a></div>";
+    var infowindow = new google.maps.InfoWindow({
+      content: contentString
+    });
+      marker.addListener('click', function() {
+      infowindow.open(map, marker);
+    })
 
   }
 
   mapSong() {
     var currentdate = new Date();
-    firebase.database().ref('marker/').push({
+    var mappedSong = {
       username: this.state.username,
       songname: this.state.accountDetails.item.name,
       artist: this.state.artist,
@@ -72,10 +87,12 @@ class Home extends React.Component {
       month:currentdate.getMonth()+1,
       day:currentdate.getDate(),
       lat: this.state.pos.lat,
-      lng: this.state.pos.lng
-    });
+      lng: this.state.pos.lng,
+      uri: this.state.uri
+    }
+    firebase.database().ref('marker/').push(mappedSong);
 
-    this.setMarkers(this.map);
+    this.setMarkers(this.map, mappedSong);
 
   }
 
@@ -88,7 +105,13 @@ class Home extends React.Component {
   }
 
   componentDidMount() {
-    var infoWindow = new google.maps.InfoWindow;
+    firebase.database().ref('/marker').once('value').then(function(snapshot) {
+      snapshot.forEach(function(childSnapshot) {
+          this.setMarkers(this.map, childSnapshot.val())
+      }.bind(this))
+    }.bind(this));
+
+    var infoWindow = {};
 
     this.map = new google.maps.Map(document.getElementById('map'), {
       zoom: 15,
@@ -105,6 +128,12 @@ class Home extends React.Component {
           position: pos,
           map: this.map
         });
+        var infowindow = new google.maps.InfoWindow({
+          content: "<div>Hello</div>"
+        });
+        marker.addListener('click', function() {
+          infowindow.open(map, marker);
+        })
         this.setState(function() {
           return {
             pos: pos
@@ -159,7 +188,8 @@ class Home extends React.Component {
               that.setState({
                 accountDetails: response,
                 songimg: response.item.album.images[2].url,
-                artist: response.item.artists[0].name
+                artist: response.item.artists[0].name,
+                uri: response.item.uri
               })
               $.ajax({
                 url: response.item.artists[0].href,
