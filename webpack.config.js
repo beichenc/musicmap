@@ -13,7 +13,8 @@ module.exports = {
   ],
   output: {
     path: __dirname + '/dist',
-    filename: "index_bundle.js"
+    filename: "index_bundle.js",
+    publicPath: "/"
   },
   module: {
     loaders: [
@@ -25,7 +26,7 @@ module.exports = {
       {
         test: /\.(jpe?g|png|gif|svg)$/i,
         loaders: [
-          'file-loader?name=/app/images/[name].[ext]'
+          'file-loader?name=/app/images/[name].[ext]&publicPath=.'
         ]
       },
       {
@@ -37,6 +38,9 @@ module.exports = {
         loader: "css-loader"
       }
     ]
+  },
+  devServer: {
+    historyApiFallback: true
   },
   plugins: [HtmlWebpackPluginConfig]
 }

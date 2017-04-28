@@ -1,9 +1,9 @@
 var React = require('react');
 var styles = require('../styles/styles.css');
 
-var Login = React.createClass({
+class Login extends React.Component {
 
-  render: function() {
+  render() {
     return (
       <div className="wrapper">
         <div id="login">
@@ -13,6 +13,6 @@ var Login = React.createClass({
       </div>
     )
   }
-})
+}
 
 module.exports = Login;

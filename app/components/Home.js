@@ -2,19 +2,21 @@ var React = require('react')
 var styles = require('../styles/styles.css');
 // var markerIcon = require('../images/markerBlue.png');
 
-var Home = React.createClass({
+class Home extends React.Component {
 
-  getInitialState: function() {
-    return {
+  constructor(props) {
+    super(props);
+
+    this.state = {
       accountDetails: {
         item: {}
       },
       oauthDetails: {},
       isLoggedIn: false
     }
-  },
+  }
 
-  componentDidMount: function() {
+  componentDidMount() {
     var menu = require('../js/menu.js');
     var that = this;
 
@@ -28,10 +30,12 @@ var Home = React.createClass({
     } else {
       if (access_token) {
         // render oauth info
-        that.setState({
-          oauthDetails: {
-            access_token: access_token,
-            refresh_token: refresh_token
+        that.setState(function() {
+          return {
+            oauthDetails: {
+              access_token: access_token,
+              refresh_token: refresh_token
+            }
           }
         })
 
@@ -43,8 +47,11 @@ var Home = React.createClass({
               'Authorization': 'Bearer ' + access_token
             },
             success: function(response) {
-              that.setState({
-                accountDetails: response
+              console.log(response)
+              that.setState(function() {
+                return {
+                  accountDetails: response
+                }
               })
 
               // $('#login').hide();
@@ -68,11 +75,11 @@ var Home = React.createClass({
     // this.setState({
     //  isLoggedIn: true
     // })
-  },
+  }
 
 
 
-  render: function() {
+  render() {
     return (
       <div className="wrapperWithoutBg">
         <div id="loggedin">
@@ -103,6 +110,6 @@ var Home = React.createClass({
       </div>
     )
   }
-})
+}
 
 module.exports = Home;
