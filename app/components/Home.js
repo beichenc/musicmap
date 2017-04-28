@@ -21,21 +21,21 @@ class Home extends React.Component {
       pos: {}
     };
   }
-  mapSong(){
+  mapSong() {
     var currentdate = new Date();
     firebase.database().ref('marker/').push({
-    username: "",
-    songname: this.state.accountDetails.item.name,
-    artist: "",
-    genre: "",
-    songimg: this.state.songimg,
-    year: currentdate.getFullYear(),
-    month:currentdate.getMonth()+1,
-    day:currentdate.getDate(),
-    lat: pos.lat,
-    lng: pos.lng
-  });
-  console.log(this.state.accountDetails.item.name);
+      username: "",
+      songname: this.state.accountDetails.item.name,
+      artist: "",
+      genre: "",
+      songimg: this.state.songimg,
+      year: currentdate.getFullYear(),
+      month:currentdate.getMonth()+1,
+      day:currentdate.getDate(),
+      lat: this.state.pos.lat,
+      lng: this.state.pos.lng
+    });
+    console.log(this.state.accountDetails.item.name);
   }
 
   handleLocationError(browserHasGeolocation, infoWindow, pos) {
