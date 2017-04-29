@@ -218,7 +218,7 @@ class Home extends React.Component {
 
         // Testing own API
         $.ajax({
-          url: 'http://pacific-reaches-20267.herokuapp.com/api/todos',
+          url: 'https://pacific-reaches-20267.herokuapp.com/api/todos',
           success: function(response) {
             console.log(response);
           }
