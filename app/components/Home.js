@@ -216,6 +216,14 @@ class Home extends React.Component {
           }
         })
 
+        // Testing own API
+        $.ajax({
+          url: 'http://pacific-reaches-20267.herokuapp.com/api/todos',
+          success: function(response) {
+            console.log(response);
+          }
+        })
+
       } else {
           // Redirect user to login page - don't really know if this works cause I dunno how to test it
           //window.location.href = '#/';
