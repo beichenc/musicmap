@@ -326,6 +326,37 @@ body.has-active-menu {
   border-radius: 24px;
 }*/
 
+/* InfoWindow */
+.infoWindow {
+  color: black;
+  border-radius: 24px;
+}
+
+.infoWindow ul {
+  list-style: none;
+  text-align: center;
+  padding-left: 0px;
+}
+
+.gm-style-iw {
+  overflow: auto;
+  background-color: white;
+}
+
+.listenButton {
+  border-radius: 24px;
+}
+
+.songName {
+  /*background-color: #5cb85c;*/
+  overflow: auto;
+  /*width: 100%;
+  padding-top: 10px;
+  padding-bottom: 10px;*/
+  /*color: white;*/
+  font-weight: bold;
+}
+
 .pac-card {
   margin: 10px 10px 0 0;
   border-radius: 2px 0 0 2px;
@@ -337,10 +368,7 @@ body.has-active-menu {
   font-family: Roboto;
 }
 
-/* InfoWindow */
-.infoWindow{
-  color: black;
-}
+
 
 #pac-container {
   padding-bottom: 12px;

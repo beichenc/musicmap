@@ -65,13 +65,30 @@ class Home extends React.Component {
       genres = genres + ", ";
     })
     genres = genres.substring(0, genres.length-2)
-    var contentString = "<div style='color: black;'><div>"+mappedSong.songname+"</div><div><ul><li>Artist: "+mappedSong.artist+"</li><li>Genre: "+ genres +"</li><li>Mapped by: "+mappedSong.username+"</li><li>Date: "+mappedSong.year+"."+mappedSong.month+"."+mappedSong.day+"</li></ul></div><a href='"+mappedSong.uri+"'><button>Listen</button></a></div>";
+    var contentString = "<div class='infoWindow'><div class='songName'>"+mappedSong.songname+"</div><div><ul><li>Artist: "+mappedSong.artist+"</li><li>Genre: "+ genres +"</li><li>Mapped by: "+mappedSong.username+"</li><li>Date: "+mappedSong.year+"."+mappedSong.month+"."+mappedSong.day+"</li></ul></div><a href='"+mappedSong.uri+"'><button class='btn btn-success listenButton'>Listen</button></a></div>";
+
     var infowindow = new google.maps.InfoWindow({
       content: contentString
     });
-      marker.addListener('click', function() {
+    marker.addListener('click', function() {
       infowindow.open(map, marker);
     })
+
+    // google.maps.event.addListener(infowindow, 'domready', function() {
+    //   // Reference to the DIV that wraps the bottom of infowindow
+    //   var iwOuter = $('.gm-style-iw');
+    //
+    //   var iwBackground = iwOuter.prev();
+    //   console.log(iwBackground);
+    //   // Removes background shadow DIV
+    //   iwBackground.children(':nth-child(2)').css({'display' : 'none'});
+    //   // Removes white background DIV
+    //   iwBackground.children(':nth-child(4)').css({'display' : 'none'});
+    //   // Reference to the div that groups the close button elements.
+    //   var iwCloseBtn = iwOuter.next();
+    //
+    //   iwCloseBtn.css({opacity: '1', right: '38px', top: '3px', border: '3px solid #48b5e9', 'border-radius': '13px', 'box-shadow': '0 0 5px #3990B9'});
+    // })
 
   }
 
