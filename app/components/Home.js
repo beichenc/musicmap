@@ -22,7 +22,9 @@ class Home extends React.Component {
       pos: {},
       dataLoading: true,
       mapLoading: true,
-      isLoading: true
+      isLoading: true,
+      error: false,
+      mapError: false
     };
     this.map = {}
   }
@@ -148,7 +150,19 @@ class Home extends React.Component {
           genres: artistDetails.data.genres
         })
       }.bind(this))
+      .catch(function(error) {
+        this.setState({
+          isLoading: false,
+          error: true
+        })
+      })
     }.bind(this))
+    .catch(function(error) {
+      this.setState({
+        isLoading: false,
+        error: true
+      })
+    })
   }
 
   getUserData() {
@@ -164,6 +178,12 @@ class Home extends React.Component {
         username: response.data.id
       })
     }.bind(this))
+    .catch(function(error) {
+      this.setState({
+        isLoading: false,
+        error: true
+      })
+    })
   }
 
   getOwnData() {
@@ -173,12 +193,81 @@ class Home extends React.Component {
       .then(function(response) {
         console.log(response);
       })
+      .catch(function(error) {
+        this.setState({
+          isLoading: false,
+          error: true
+        })
+      })
 
     axios.get('https://178.62.2.218/api/todos')
       .then(function(response) {
         console.log("From Digital Ocean: ");
         console.log(response);
       })
+      .catch(function(error) {
+        this.setState({
+          isLoading: false,
+          error: true
+        })
+      })
+  }
+
+  // Sets the user's position to state.
+  setPosition(position) {
+
+    var pos = {
+      lat: position.coords.latitude,
+      lng: position.coords.longitude
+    };
+    console.log(pos);
+    // var marker = new google.maps.Marker({
+    //   position: pos,
+    //   map: this.map
+    // });
+    this.setState(function() {
+      return {
+        pos: pos
+      }
+    })
+    // var infoWindow = new google.maps.InfoWindow({
+    //   content: "<p style='color: black;'> Location found. </p>"
+    // })
+    // infoWindow.setPosition(pos);
+    // infoWindow.open(this.map);
+    //this.map.setCenter(pos);
+  }
+
+  CenterControl(controlDiv, map) {
+
+    // Set CSS for the control border.
+    var controlUI = document.createElement('div');
+    controlUI.style.backgroundColor = '#fff';
+    controlUI.style.border = '2px solid #fff';
+    controlUI.style.borderRadius = '3px';
+    controlUI.style.boxShadow = '0 2px 6px rgba(0,0,0,.3)';
+    controlUI.style.cursor = 'pointer';
+    controlUI.style.marginBottom = '22px';
+    controlUI.style.textAlign = 'center';
+    controlUI.title = 'Click to recenter the map';
+    controlDiv.appendChild(controlUI);
+
+    // Set CSS for the control interior.
+    var controlText = document.createElement('div');
+    controlText.style.color = 'rgb(25,25,25)';
+    controlText.style.fontFamily = 'Roboto,Arial,sans-serif';
+    controlText.style.fontSize = '16px';
+    controlText.style.lineHeight = '38px';
+    controlText.style.paddingLeft = '5px';
+    controlText.style.paddingRight = '5px';
+    controlText.innerHTML = 'Center Map';
+    controlUI.appendChild(controlText);
+
+    // Setup the click event listeners: simply set the map to Chicago.
+    controlUI.addEventListener('click', function() {
+      map.setCenter(this.state.pos);
+    }.bind(this));
+
   }
 
   componentDidMount() {
@@ -189,15 +278,20 @@ class Home extends React.Component {
       }.bind(this))
     }.bind(this));
 
-    var infoWindow = {};
+    //var infoWindow = {};
 
     this.map = new google.maps.Map(document.getElementById('map'), {
       zoom: 15,
       center: {lat: -34.397, lng: 150.644}
     });
 
+
     if (navigator.geolocation) {
+
+      // On page load, get current position and center the map on that position.
       navigator.geolocation.getCurrentPosition(function(position) {
+
+        // Not loading anymore
         this.setState({
           mapLoading: false
         }, () => {
@@ -207,31 +301,53 @@ class Home extends React.Component {
             })
           }
         })
+
+        this.setPosition(position);
         var pos = {
           lat: position.coords.latitude,
           lng: position.coords.longitude
         };
-        var marker = new google.maps.Marker({
-          position: pos,
-          map: this.map
-        });
-        this.setState(function() {
-          return {
-            pos: pos
-          }
-        })
-        infoWindow = new google.maps.InfoWindow({
-          content: "<p style='color: black;'> Location found. </p>"
-        })
-        infoWindow.setPosition(pos);
-        infoWindow.open(this.map);
-        this.map.setCenter(pos);
+        // var marker = new google.maps.Marker({
+        //   position: pos,
+        //   map: this.map
+        // });
+        // var infoWindow = new google.maps.InfoWindow({
+        //   content: "<p style='color: black;'> Location found. </p>"
+        // })
+        // infoWindow.setPosition(pos);
+        // infoWindow.open(this.map);
+        this.map.setCenter(pos)
+
+
       }.bind(this), function() {
-        handleLocationError(true, infoWindow, this.map.getCenter());
-      });
+        //this.handleLocationError(true, infoWindow, this.map.getCenter());
+        this.setState({
+          isLoading: false,
+          mapError: true
+        })
+      }.bind(this));
+
+      //Watch the user's position without centering the map each time.
+      navigator.geolocation.watchPosition(function(position) {
+        this.setPosition(position);
+      }.bind(this), function() {
+
+      }.bind(this));
+
+      // Create a button to center the map.
+      var centerControlDiv = document.createElement('div');
+
+      this.CenterControl(centerControlDiv, this.map);
+      centerControlDiv.index = 1;
+      this.map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(centerControlDiv);
+
     } else {
       // Browser doesn't support Geolocation
-      handleLocationError(false, infoWindow, this.map.getCenter());
+      //this.handleLocationError(false, infoWindow, this.map.getCenter());
+      this.setState({
+        isLoading: false,
+        mapError: true
+      })
     }
 
     var menu = require('../js/menu.js');
@@ -245,7 +361,23 @@ class Home extends React.Component {
       alert('There was an error during the authentication');
     } else {
       if (access_token) {
-        // render oauth info
+        // Get a new access token every ~30 minutes, since they expire.
+        setInterval(function() {
+          console.log("1700000 ms passed")
+          axios({
+            method: 'get',
+            url: '/refresh_token',
+            params: {
+              refresh_token: refresh_token
+            }
+          }).then(function(response) {
+            access_token = response.data.access_token;
+            window.location.replace(`/#/${access_token}/${refresh_token}`);
+          })
+        }, 1700000)
+        // 1800000 ms = 30 min
+
+        // Set state and get all data from Spotify API.
         var oauthDetails = {
           access_token: access_token,
           refresh_token: refresh_token
@@ -253,6 +385,7 @@ class Home extends React.Component {
         this.setState({
           oauthDetails: oauthDetails
         }, () => {
+          console.log(this.state.oauthDetails.access_token);
           axios.all([this.getSongData(), this.getUserData(), this.getOwnData()])
             .then(function(acct, perms) {
               this.setState({
@@ -267,8 +400,10 @@ class Home extends React.Component {
             }.bind(this))
         })
 
-        console.log("access token retrieved")
-
+        // Get currently playing song every 30 sec to update
+        setInterval(function() {
+          this.getSongData();
+        }.bind(this), 30000)
 
 
         // Currently playing song
@@ -325,8 +460,10 @@ class Home extends React.Component {
         <div id="loggedin">
           <div id="user-profile">
             {this.state.isLoading ?
-            <h1 className="currentlyPlaying">Loading</h1> :
+            <div className="loadingGif"></div> :
             <h1 className="currentlyPlaying">Currently playing: {this.state.songname}</h1>}
+            {this.state.error && <p>Oops...error with loading data</p>}
+            {this.state.mapError && <p>Oops...error with geolocation</p>}
 
             <div id="o-wrapper" className="o-wrapper">
               <div className="c-buttons">
