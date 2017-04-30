@@ -1,7 +1,7 @@
 var React = require('react')
 var styles = require('../styles/styles.css');
 var Map = require('./Map.js');
-// var markerIcon = require('../images/markerBlue.png');
+var axios = require('axios');
 
 class Home extends React.Component {
 
@@ -12,20 +12,22 @@ class Home extends React.Component {
     this.componentDidMount = this.componentDidMount.bind(this);
 
     this.state = {
-      accountDetails: {
-        item: {}
-      },
+      songname: "",
       songimg: "",
       genres: [],
       artist: "",
       username: "",
       oauthDetails: {},
       isLoggedIn: false,
-      pos: {}
+      pos: {},
+      dataLoading: true,
+      mapLoading: true,
+      isLoading: true
     };
     this.map = {}
   }
 
+  // Puts a marker on the map for the specific song.
   setMarkers(map, mappedSong) {
     // Adds markers to the map.
 
@@ -92,11 +94,12 @@ class Home extends React.Component {
 
   }
 
+  // Sends the song data to Firebase and calls setMarkers().
   mapSong() {
     var currentdate = new Date();
     var mappedSong = {
       username: this.state.username,
-      songname: this.state.accountDetails.item.name,
+      songname: this.state.songname,
       artist: this.state.artist,
       genres: this.state.genres,
       songimg: this.state.songimg,
@@ -121,7 +124,65 @@ class Home extends React.Component {
     infoWindow.open(map);
   }
 
+  getSongData() {
+    // Retrieving currently playing song
+    axios({
+      method: 'get',
+      url: 'https://api.spotify.com/v1/me/player/currently-playing',
+      headers: {
+        'Authorization': 'Bearer ' + this.state.oauthDetails.access_token
+      }
+    }).then(function(response) {
+      console.log(response);
+      this.setState({
+        songname: response.data.item.name,
+        songimg: response.data.item.album.images[2].url,
+        artist: response.data.item.artists[0].name,
+        uri: response.data.item.uri
+      })
+      // Retrieving genre data
+      axios.get(response.data.item.artists[0].href)
+        .then(function(artistDetails) {
+        console.log(artistDetails);
+        this.setState({
+          genres: artistDetails.data.genres
+        })
+      }.bind(this))
+    }.bind(this))
+  }
+
+  getUserData() {
+    // Retrieving user data
+    axios({
+      method: 'get',
+      url: 'https://api.spotify.com/v1/me',
+      headers: {
+        'Authorization': 'Bearer ' + this.state.oauthDetails.access_token
+      }
+    }).then(function(response) {
+      this.setState({
+        username: response.data.id
+      })
+    }.bind(this))
+  }
+
+  getOwnData() {
+
+    // Testing own API
+    axios.get('https://pacific-reaches-20267.herokuapp.com/api/todos')
+      .then(function(response) {
+        console.log(response);
+      })
+
+    axios.get('https://178.62.2.218/api/todos')
+      .then(function(response) {
+        console.log("From Digital Ocean: ");
+        console.log(response);
+      })
+  }
+
   componentDidMount() {
+    // Read data from firebase and set to map
     firebase.database().ref('/marker').once('value').then(function(snapshot) {
       snapshot.forEach(function(childSnapshot) {
           this.setMarkers(this.map, childSnapshot.val())
@@ -137,6 +198,15 @@ class Home extends React.Component {
 
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(function(position) {
+        this.setState({
+          mapLoading: false
+        }, () => {
+          if (this.state.dataLoading === false) {
+            this.setState({
+              isLoading: false
+            })
+          }
+        })
         var pos = {
           lat: position.coords.latitude,
           lng: position.coords.longitude
@@ -145,12 +215,6 @@ class Home extends React.Component {
           position: pos,
           map: this.map
         });
-        var infowindow = new google.maps.InfoWindow({
-          content: "<div>Hello</div>"
-        });
-        marker.addListener('click', function() {
-          infowindow.open(map, marker);
-        })
         this.setState(function() {
           return {
             pos: pos
@@ -171,7 +235,6 @@ class Home extends React.Component {
     }
 
     var menu = require('../js/menu.js');
-    var that = this;
 
     // Spotify
     var access_token = this.props.routeParams.access_token,
@@ -183,63 +246,71 @@ class Home extends React.Component {
     } else {
       if (access_token) {
         // render oauth info
-        that.setState(function() {
-          return {
-            oauthDetails: {
-              access_token: access_token,
-              refresh_token: refresh_token
-            }
-          }
+        var oauthDetails = {
+          access_token: access_token,
+          refresh_token: refresh_token
+        }
+        this.setState({
+          oauthDetails: oauthDetails
+        }, () => {
+          axios.all([this.getSongData(), this.getUserData(), this.getOwnData()])
+            .then(function(acct, perms) {
+              this.setState({
+                dataLoading: false
+              }, () => {
+                if (this.state.mapLoading === false) {
+                  this.setState({
+                    isLoading: false
+                  })
+                }
+              })
+            }.bind(this))
         })
 
         console.log("access token retrieved")
 
+
+
         // Currently playing song
-        $.ajax({
-            url: 'https://api.spotify.com/v1/me/player/currently-playing',
-            headers: {
-              'Authorization': 'Bearer ' + access_token
-            },
-            success: function(response) {
-              console.log(response);
-              that.setState({
-                accountDetails: response,
-                songimg: response.item.album.images[2].url,
-                artist: response.item.artists[0].name,
-                uri: response.item.uri
-              })
-              $.ajax({
-                url: response.item.artists[0].href,
-                success: function(artistDetails) {
-                  console.log(artistDetails);
-                  that.setState({
-                    genres: artistDetails.genres
-                  })
-                }
-              })
+        // $.ajax({
+        //     url: 'https://api.spotify.com/v1/me/player/currently-playing',
+        //     headers: {
+        //       'Authorization': 'Bearer ' + access_token
+        //     },
+        //     success: function(response) {
+        //       console.log(response);
+        //       this.setState({
+        //         songname: response.item.name,
+        //         songimg: response.item.album.images[2].url,
+        //         artist: response.item.artists[0].name,
+        //         uri: response.item.uri
+        //       })
+        //       $.ajax({
+        //         url: response.item.artists[0].href,
+        //         success: function(artistDetails) {
+        //           console.log(artistDetails);
+        //           that.setState({
+        //             genres: artistDetails.genres
+        //           })
+        //         }.bind(this);
+        //       })
+        //
+        //     }.bind(this);
+        // });
 
-            }
-        });
+        // $.ajax({
+        //   url: 'https://api.spotify.com/v1/me',
+        //   headers: {
+        //     'Authorization': 'Bearer ' + access_token
+        //   },
+        //   success: function(response) {
+        //     that.setState({
+        //       username: response.id
+        //     })
+        //   }
+        // })
 
-        $.ajax({
-          url: 'https://api.spotify.com/v1/me',
-          headers: {
-            'Authorization': 'Bearer ' + access_token
-          },
-          success: function(response) {
-            that.setState({
-              username: response.id
-            })
-          }
-        })
 
-        // Testing own API
-        $.ajax({
-          url: 'https://pacific-reaches-20267.herokuapp.com/api/todos',
-          success: function(response) {
-            console.log(response);
-          }
-        })
 
       } else {
           // Redirect user to login page - don't really know if this works cause I dunno how to test it
@@ -253,7 +324,9 @@ class Home extends React.Component {
       <div className="wrapperWithoutBg">
         <div id="loggedin">
           <div id="user-profile">
-            <h1 className="currentlyPlaying">Currently playing: {this.state.accountDetails.item.name}</h1>
+            {this.state.isLoading ?
+            <h1 className="currentlyPlaying">Loading</h1> :
+            <h1 className="currentlyPlaying">Currently playing: {this.state.songname}</h1>}
 
             <div id="o-wrapper" className="o-wrapper">
               <div className="c-buttons">
