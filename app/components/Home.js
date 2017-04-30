@@ -266,6 +266,7 @@ class Home extends React.Component {
     // Setup the click event listeners: simply set the map to Chicago.
     controlUI.addEventListener('click', function() {
       map.setCenter(this.state.pos);
+      map.setZoom(15);
     }.bind(this));
 
   }
