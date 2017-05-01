@@ -3,7 +3,9 @@ var styles = require('../styles/styles.css');
 var Map = require('./Map.js');
 var axios = require('axios');
 var positionIcon = require('../images/icon_bludot.png');
-var Search = require('./Search.js')
+var Search = require('./Search.js');
+var moment = require('moment');
+var TimeFilter = require('./TimeFilter.js');
 
 class Home extends React.Component {
 
@@ -85,6 +87,7 @@ class Home extends React.Component {
       genres = genres + ", ";
     })
     genres = genres.substring(0, genres.length-2)
+
     var contentString = "<div class='infoWindow'><div class='songName'>"+mappedSong.songname+"</div><div><ul><li>Artist: "+mappedSong.artist+"</li><li>Genre: "+ genres +"</li><li>Mapped by: "+mappedSong.username+"</li><li>Date: "+mappedSong.year+"."+mappedSong.month+"."+mappedSong.day+"</li></ul></div><a href='"+mappedSong.uri+"'><button class='btn btn-success listenButton'>Listen</button></a></div>";
 
     var infowindow = new google.maps.InfoWindow({
@@ -295,7 +298,7 @@ class Home extends React.Component {
     this.mapMarkers=[];
   }
 
-  setMatchingMarkers(searchingGenre){
+  setMatchingGenres(searchingGenre){
     firebase.database().ref('/marker').once('value').then(function(snapshot) {
       snapshot.forEach(function(childSnapshot) {
         childSnapshot.val().genres.map(function(genre){
@@ -307,12 +310,47 @@ class Home extends React.Component {
     }.bind(this));
   }
 
-  handleSubmit(searchingGenre){
+  // setMatchingTime(searchingTime){
+  //   firebase.database().ref('/marker').once('value').then(function(snapshot) {
+  //     var currentTime = new Date();
+  //     switch(searchingTime){
+  //       case 'Latest Year':
+  //         snapshot.forEach(function(childSnapshot) {
+  //           if(childSnapshot.val().year == currentTime.getFullYear()){
+  //             this.setMarkers(this.map, childSnapshot.val())
+  //           }
+  //         }.bind(this))
+  //         break;
+  //       case 'Latest Month': mappedSongs=month
+  //         snapshot.forEach(function(childSnapshot) {
+  //           if(childSnapshot.val().month == currentTime.getMonth()+1){
+  //             this.setMarkers(this.map, childSnapshot.val())
+  //           }
+  //         }.bind(this))
+  //       break;
+  //       case 'Latest Week': mappedSongs=childSnapshot.val().w
+  //
+  //     }
+  //     snapshot.forEach(function(childSnapshot) {
+  //       if(childSnapshot.val().year == currentTime.getFullYear()){
+  //         this.setMarkers(this.map, childSnapshot.val())
+  //       }
+  //     }.bind(this))
+  //   }.bind(this));
+  //
+  // }
+  handleSubmit(searchingValue, searchingType){
     this.removeMarkers();
-    this.setMatchingMarkers(searchingGenre);
+    if(searchingType == 'Genre'){
+      this.setMatchingGenres(searchingValue);
+    }else{
+      setMatchingTime();
+    }
   }
 
   componentDidMount() {
+    console.log(moment().subtract(1,'years').calendar());
+    console.log(moment().subtract(1,'weeks').calendar());
     var markerCounter = 0;
     // Read data from firebase and set to map
     firebase.database().ref('/marker').once('value').then(function(snapshot) {
@@ -444,7 +482,7 @@ class Home extends React.Component {
             access_token = response.data.access_token;
             window.location.replace(`/#/${access_token}/${refresh_token}`);
           })
-        }, 1700000)
+        }, 900000)
         // 1800000 ms = 30 min
 
         // Set state and get all data from Spotify API.
@@ -552,11 +590,10 @@ class Home extends React.Component {
               <ul className="c-menu__items">
                 <li className="c-menu__item"><a href="#" className="c-menu__link">About</a></li>
                 <li className="c-menu__item"><p>Search genre</p>
-                  <div><Search onSubmit={this.handleSubmit}/></div>
+                  <div><Search onSubmit={this.handleSubmit} placeholder="Search genre..."/></div>
                 </li>
                 <li className="c-menu__item"><p>Search location</p></li>
-                <div>
-                </div>
+                <div><TimeFilter /></div>
               </ul>
             </nav>
 
