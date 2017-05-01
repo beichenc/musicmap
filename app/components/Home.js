@@ -283,8 +283,14 @@ class Home extends React.Component {
 
     this.map = new google.maps.Map(document.getElementById('map'), {
       zoom: 15,
-      center: {lat: -34.397, lng: 150.644}
+      center: {lat: -34.397, lng: 150.644},
+      scrollwheel: false,
+      draggable: true
     });
+
+    $(window).resize(function() {
+      google.maps.event.trigger(map, "resize");
+    })
 
 
     if (navigator.geolocation) {
@@ -472,7 +478,9 @@ class Home extends React.Component {
                 <button id="c-button--slide-right" className="c-button btn btn-lg btn-success" onClick={this.mapSong}>Map!</button>
               </div>
             </div>
-            <div id="map"></div>
+
+              <div id="map"></div>
+
 
             <div id="c-mask" className="c-mask"></div>
 
