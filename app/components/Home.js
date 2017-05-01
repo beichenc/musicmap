@@ -2,6 +2,8 @@ var React = require('react')
 var styles = require('../styles/styles.css');
 var Map = require('./Map.js');
 var axios = require('axios');
+var positionIcon = require('../images/icon_bludot.png');
+var Search = require('./Search.js')
 
 class Home extends React.Component {
 
@@ -10,6 +12,8 @@ class Home extends React.Component {
 
     this.mapSong = this.mapSong.bind(this);
     this.componentDidMount = this.componentDidMount.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
+
 
     this.state = {
       songname: "",
@@ -25,8 +29,10 @@ class Home extends React.Component {
       isLoading: true,
       error: false,
       mapError: false
+      // markerCounter: 0
     };
-    this.map = {}
+    this.map = {};
+    this.mapMarkers=[];
   }
 
   // Puts a marker on the map for the specific song.
@@ -59,9 +65,19 @@ class Home extends React.Component {
       map: map,
       icon: image,
       // shape: shape,
-      title: mappedSong.songname
+      title: mappedSong.songname,
+      optimized: false,
+      zIndex: 1
     });
+    this.mapMarkers.push(marker);
     console.log(marker)
+    // this.setState({
+    //   markerCounter: this.state.markerCounter + 1
+    // }, () => {
+    //   console.log(this.state.markerCounter);
+    // })
+
+
 
     var genres ="";
     mappedSong.genres.map(function(genre){
@@ -200,21 +216,21 @@ class Home extends React.Component {
         })
       })
 
-    axios.get('https://178.62.2.218/api/todos')
-      .then(function(response) {
-        console.log("From Digital Ocean: ");
-        console.log(response);
-      })
-      .catch(function(error) {
-        this.setState({
-          isLoading: false,
-          error: true
-        })
-      })
+    // axios.get('https://178.62.2.218/api/todos')
+    //   .then(function(response) {
+    //     console.log("From Digital Ocean: ");
+    //     console.log(response);
+    //   })
+    //   .catch(function(error) {
+    //     this.setState({
+    //       isLoading: false,
+    //       error: true
+    //     })
+    //   }.bind(this))
   }
 
   // Sets the user's position to state.
-  setPosition(position) {
+  ourSetPosition(position) {
 
     var pos = {
       lat: position.coords.latitude,
@@ -271,11 +287,38 @@ class Home extends React.Component {
 
   }
 
+  //Search bar for genres
+  removeMarkers(){
+    for(var i=0; i<this.mapMarkers.length; i++){
+      this.mapMarkers[i].setMap(null)
+    }
+    this.mapMarkers=[];
+  }
+
+  setMatchingMarkers(searchingGenre){
+    firebase.database().ref('/marker').once('value').then(function(snapshot) {
+      snapshot.forEach(function(childSnapshot) {
+        childSnapshot.val().genres.map(function(genre){
+          if(genre.includes(searchingGenre)){
+            this.setMarkers(this.map, childSnapshot.val())
+          }
+        }.bind(this))
+      }.bind(this))
+    }.bind(this));
+  }
+
+  handleSubmit(searchingGenre){
+    this.removeMarkers();
+    this.setMatchingMarkers(searchingGenre);
+  }
+
   componentDidMount() {
+    var markerCounter = 0;
     // Read data from firebase and set to map
     firebase.database().ref('/marker').once('value').then(function(snapshot) {
       snapshot.forEach(function(childSnapshot) {
           this.setMarkers(this.map, childSnapshot.val())
+          markerCounter += 1;
       }.bind(this))
     }.bind(this));
 
@@ -295,6 +338,8 @@ class Home extends React.Component {
 
     if (navigator.geolocation) {
 
+      var marker;
+
       // On page load, get current position and center the map on that position.
       navigator.geolocation.getCurrentPosition(function(position) {
 
@@ -309,15 +354,28 @@ class Home extends React.Component {
           }
         })
 
-        this.setPosition(position);
+        this.ourSetPosition(position);
         var pos = {
           lat: position.coords.latitude,
           lng: position.coords.longitude
         };
-        // var marker = new google.maps.Marker({
-        //   position: pos,
-        //   map: this.map
-        // });
+
+        var image = {
+          url: positionIcon,
+          // The origin for this image is (0, 0).
+          origin: new google.maps.Point(0, 0),
+          // The anchor for this image is the base of the flagpole at (0, 32).
+          anchor: new google.maps.Point(0, 32)
+        };
+        console.log(markerCounter);
+        marker = new google.maps.Marker({
+          position: pos,
+          map: this.map,
+          icon: image,
+          zindex: markerCounter + 1,
+          optimized: false
+        });
+
         // var infoWindow = new google.maps.InfoWindow({
         //   content: "<p style='color: black;'> Location found. </p>"
         // })
@@ -336,8 +394,13 @@ class Home extends React.Component {
 
       //Watch the user's position without centering the map each time.
       navigator.geolocation.watchPosition(function(position) {
-        this.setPosition(position);
+        this.ourSetPosition(position);
+        marker.setPosition({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        })
       }.bind(this), function() {
+
 
       }.bind(this));
 
@@ -487,10 +550,13 @@ class Home extends React.Component {
             <nav id="c-menu--slide-left" className="c-menu c-menu--slide-left">
               <button className="c-menu__close">&larr; Close Menu</button>
               <ul className="c-menu__items">
-                <li className="c-menu__item"><a href="#" className="c-menu__link">Filters</a></li>
-                <li className="c-menu__item"><a href="#" className="c-menu__link">Search location</a></li>
-                <li className="c-menu__item"><a href="#" className="c-menu__link">Playlists</a></li>
                 <li className="c-menu__item"><a href="#" className="c-menu__link">About</a></li>
+                <li className="c-menu__item"><p>Search genre</p>
+                  <div><Search onSubmit={this.handleSubmit}/></div>
+                </li>
+                <li className="c-menu__item"><p>Search location</p></li>
+                <div>
+                </div>
               </ul>
             </nav>
 
