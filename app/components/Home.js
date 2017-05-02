@@ -523,7 +523,7 @@ class Home extends React.Component {
       alert('There was an error during the authentication');
     } else {
       if (access_token) {
-        // Get a new access token every ~30 minutes, since they expire.
+        // Get a new access token every ~15 minutes, since they expire.
         setInterval(function() {
           console.log("1700000 ms passed")
           axios({
@@ -542,7 +542,7 @@ class Home extends React.Component {
               }
             })
           })
-        }, 1700000)
+        }, 900000)
         // 1800000 ms = 30 min
 
         // Set state and get all data from Spotify API.
