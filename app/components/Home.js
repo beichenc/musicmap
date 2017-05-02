@@ -533,6 +533,12 @@ class Home extends React.Component {
           }).then(function(response) {
             access_token = response.data.access_token;
             window.location.replace(`/#/${access_token}/${refresh_token}`);
+            this.setState({
+              oauthDetails: {
+                access_token: access_token,
+                refresh_token: refresh_token
+              }
+            })
           })
         }, 1700000)
         // 1800000 ms = 30 min
