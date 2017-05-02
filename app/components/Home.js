@@ -541,8 +541,8 @@ class Home extends React.Component {
                 refresh_token: refresh_token
               }
             })
-          })
-        }, 900000)
+          }.bind(this))
+        }.bind(this), 900000)
         // 1800000 ms = 30 min
 
         // Set state and get all data from Spotify API.
