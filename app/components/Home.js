@@ -265,25 +265,28 @@ class Home extends React.Component {
     // Set CSS for the control border.
     var controlUI = document.createElement('div');
     controlUI.style.backgroundColor = '#fff';
+    controlUI.style.backgroundImage = 'url(https://maps.gstatic.com/tactile/mylocation/mylocation-sprite-1x.png)';
+    controlUI.style.height = '23px';
+    controlUI.style.width = '23px';
+    controlUI.style.marginRight = '12px';
     controlUI.style.border = '2px solid #fff';
     controlUI.style.borderRadius = '3px';
     controlUI.style.boxShadow = '0 2px 6px rgba(0,0,0,.3)';
     controlUI.style.cursor = 'pointer';
-    controlUI.style.marginBottom = '22px';
+    controlUI.style.marginBottom = '5px';
     controlUI.style.textAlign = 'center';
     controlUI.title = 'Click to recenter the map';
     controlDiv.appendChild(controlUI);
 
-    // Set CSS for the control interior.
-    var controlText = document.createElement('div');
-    controlText.style.color = 'rgb(25,25,25)';
-    controlText.style.fontFamily = 'Roboto,Arial,sans-serif';
-    controlText.style.fontSize = '16px';
-    controlText.style.lineHeight = '38px';
-    controlText.style.paddingLeft = '5px';
-    controlText.style.paddingRight = '5px';
-    controlText.innerHTML = 'Center Map';
-    controlUI.appendChild(controlText);
+    // var controlText = document.createElement('div');
+    // controlText.style.color = 'rgb(25,25,25)';
+    // controlText.style.fontFamily = 'Roboto,Arial,sans-serif';
+    // controlText.style.fontSize = '16px';
+    // controlText.style.lineHeight = '38px';
+    // controlText.style.paddingLeft = '5px';
+    // controlText.style.paddingRight = '5px';
+    // // controlText.innerHTML = 'Center Map';
+    // controlUI.appendChild(controlText);
 
     // Setup the click event listeners: simply set the map to Chicago.
     controlUI.addEventListener('click', function() {
@@ -412,9 +415,10 @@ class Home extends React.Component {
       draggable: true
     });
 
-    $(window).resize(function() {
-      google.maps.event.trigger(map, "resize");
-    })
+    //
+    // $(window).resize(function() {
+    //   google.maps.event.trigger(map, "resize");
+    // })
 
 
     if (navigator.geolocation) {
