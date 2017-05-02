@@ -310,7 +310,7 @@ class Home extends React.Component {
     }.bind(this));
   }
 
-  // setMatchingTime(searchingTime){
+  setMatchingTime(searchingTime){
   //   firebase.database().ref('/marker').once('value').then(function(snapshot) {
   //     var currentTime = new Date();
   //     switch(searchingTime){
@@ -338,13 +338,14 @@ class Home extends React.Component {
   //     }.bind(this))
   //   }.bind(this));
   //
-  // }
+  }
   handleSubmit(searchingValue, searchingType){
     this.removeMarkers();
     if(searchingType == 'Genre'){
       this.setMatchingGenres(searchingValue);
     }else{
-      setMatchingTime();
+      console.log(searchingValue);
+      this.setMatchingTime(searchingValue);
     }
   }
 
@@ -410,9 +411,10 @@ class Home extends React.Component {
           position: pos,
           map: this.map,
           icon: image,
-          zindex: markerCounter + 1,
+          zIndex: markerCounter + 1,
           optimized: false
         });
+
 
         // var infoWindow = new google.maps.InfoWindow({
         //   content: "<p style='color: black;'> Location found. </p>"
@@ -428,7 +430,9 @@ class Home extends React.Component {
           isLoading: false,
           mapError: true
         })
-      }.bind(this));
+      }.bind(this), {
+        enableHighAccuracy: true
+      });
 
       //Watch the user's position without centering the map each time.
       navigator.geolocation.watchPosition(function(position) {
@@ -589,11 +593,11 @@ class Home extends React.Component {
               <button className="c-menu__close">&larr; Close Menu</button>
               <ul className="c-menu__items">
                 <li className="c-menu__item"><a href="#" className="c-menu__link">About</a></li>
-                <li className="c-menu__item"><p>Search genre</p>
+                <li className="c-menu__item"><p>Filter by genre</p>
                   <div><Search onSubmit={this.handleSubmit} placeholder="Search genre..."/></div>
                 </li>
-                <li className="c-menu__item"><p>Search location</p></li>
-                <div><TimeFilter /></div>
+                <li className="c-menu__item"><p>Filter by time</p></li>
+                <div><TimeFilter onSubmit={this.handleSubmit}/></div>
               </ul>
             </nav>
 

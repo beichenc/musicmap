@@ -4,6 +4,11 @@ html, body {
   background-color: #212121;
 }
 
+/* The blue dot marker*/
+div[title=''] {
+  pointer-events: none;
+}
+
 @media all and (min-device-width: 800px) {
   .loginElement {
     margin-top: 100px;
