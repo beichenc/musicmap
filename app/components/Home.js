@@ -441,7 +441,9 @@ class Home extends React.Component {
       }.bind(this), function() {
 
 
-      }.bind(this));
+      }.bind(this), {
+        enableHighAccuracy: true
+      });
 
       // Create a button to center the map.
       var centerControlDiv = document.createElement('div');

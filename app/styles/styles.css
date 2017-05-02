@@ -13,11 +13,32 @@ div[title=''] {
   .loginElement {
     margin-top: 100px;
   }
+  .wrapper {
+    text-align: center;
+    background-image: url('../images/record.jpg');
+    background-size: 100%;
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    position: fixed;
+    color: white;
+    font-family: "Open Sans";
+  }
 }
 
 @media all and (max-device-width: 800px) {
   .loginElement {
     margin-top: 50px;
+  }
+  .wrapper {
+    text-align: center;
+    background-image: url('../images/record.jpg');
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    position: fixed;
+    color: white;
+    font-family: "Open Sans";
   }
 }
 
@@ -45,16 +66,7 @@ div[title=''] {
   margin-top: 25px;
 }
 
-.wrapper {
-  text-align: center;
-  background-image: url('../images/record.jpg');
-  height: 100%;
-  width: 100%;
-  margin: 0;
-  position: fixed;
-  color: white;
-  font-family: "Open Sans";
-}
+
 
 .wrapperWithoutBg {
   text-align: center;
