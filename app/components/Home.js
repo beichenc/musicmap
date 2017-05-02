@@ -422,6 +422,7 @@ class Home extends React.Component {
 
 
     if (navigator.geolocation) {
+      console.log("nagivator location");
 
       var marker;
 
@@ -482,6 +483,7 @@ class Home extends React.Component {
 
       //Watch the user's position without centering the map each time.
       navigator.geolocation.watchPosition(function(position) {
+        console.log("watch position");
         this.ourSetPosition(position);
         marker.setPosition({
           lat: position.coords.latitude,
