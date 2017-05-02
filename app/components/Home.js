@@ -307,7 +307,7 @@ class Home extends React.Component {
     }.bind(this));
   }
 
-<<<<<<< HEAD
+
   setMatchingTime(searchingTime){
   //   firebase.database().ref('/marker').once('value').then(function(snapshot) {
   //     var currentTime = new Date();
@@ -345,11 +345,6 @@ class Home extends React.Component {
       console.log(searchingValue);
       this.setMatchingTime(searchingValue);
     }
-=======
-  handleSubmit(searchingGenre){
-    this.removeMarkers();
-    this.setMatchingMarkers(searchingGenre);
->>>>>>> parent of e03c0d5... added filter by chosen time interval
   }
 
   componentDidMount() {
@@ -594,20 +589,13 @@ class Home extends React.Component {
               <button className="c-menu__close">&larr; Close Menu</button>
               <ul className="c-menu__items">
                 <li className="c-menu__item"><a href="#" className="c-menu__link">About</a></li>
-<<<<<<< HEAD
+                
                 <li className="c-menu__item"><p>Filter by genre</p>
                   <div><Search onSubmit={this.handleSubmit} placeholder="Search genre..."/></div>
                 </li>
                 <li className="c-menu__item"><p>Filter by time</p></li>
                 <div><TimeFilter onSubmit={this.handleSubmit}/></div>
-=======
-                <li className="c-menu__item"><p>Search genre</p>
-                  <div><Search onSubmit={this.handleSubmit}/></div>
-                </li>
-                <li className="c-menu__item"><p>Search location</p></li>
-                <div>
-                </div>
->>>>>>> parent of e03c0d5... added filter by chosen time interval
+
               </ul>
             </nav>
 
