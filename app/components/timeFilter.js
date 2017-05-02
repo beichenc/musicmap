@@ -1,13 +1,13 @@
-<<<<<<< HEAD
+
 var React = require('react');
 
 class TimeFilter extends React.Component {
   constructor(props){
-  super(props);
-  this.state={
-    time:''
-  }
-  this.handleChange=this.handleChange.bind(this);
+    super(props);
+    this.state={
+      time:''
+    }
+    this.handleChange=this.handleChange.bind(this);
   }
   handleChange(){
     this.setState({
@@ -28,5 +28,3 @@ class TimeFilter extends React.Component {
   }
 }
 module.exports = TimeFilter;
-=======
->>>>>>> parent of e03c0d5... added filter by chosen time interval

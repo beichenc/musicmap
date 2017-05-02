@@ -4,6 +4,7 @@ var Map = require('./Map.js');
 var axios = require('axios');
 var positionIcon = require('../images/icon_bludot.png');
 var Search = require('./Search.js')
+var TiemFilter = require('./TimeFilter.js');
 
 class Home extends React.Component {
 
@@ -589,7 +590,7 @@ class Home extends React.Component {
               <button className="c-menu__close">&larr; Close Menu</button>
               <ul className="c-menu__items">
                 <li className="c-menu__item"><a href="#" className="c-menu__link">About</a></li>
-                
+
                 <li className="c-menu__item"><p>Filter by genre</p>
                   <div><Search onSubmit={this.handleSubmit} placeholder="Search genre..."/></div>
                 </li>
