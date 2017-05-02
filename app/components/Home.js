@@ -14,6 +14,8 @@ class Home extends React.Component {
     this.mapSong = this.mapSong.bind(this);
     this.componentDidMount = this.componentDidMount.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
+    this.setMatchingTime = this.setMatchingTime.bind(this);
+    this.setMatchingGenres = this.setMatchingGenres.bind(this);
 
 
     this.state = {
@@ -29,8 +31,9 @@ class Home extends React.Component {
       mapLoading: true,
       isLoading: true,
       error: false,
-      mapError: false
-      // markerCounter: 0
+      mapError: false,
+      timeFilter: 'All',
+      genreFilter: ''
     };
     this.map = {};
     this.mapMarkers=[];
@@ -116,6 +119,7 @@ class Home extends React.Component {
   // Sends the song data to Firebase and calls setMarkers().
   mapSong() {
     var currentdate = new Date();
+    //console.log(currentdate.getTime());
     var mappedSong = {
       username: this.state.username,
       songname: this.state.songname,
@@ -125,6 +129,7 @@ class Home extends React.Component {
       year: currentdate.getFullYear(),
       month:currentdate.getMonth()+1,
       day:currentdate.getDate(),
+      unixtime: currentdate.getTime(),
       lat: this.state.pos.lat,
       lng: this.state.pos.lng,
       uri: this.state.uri
@@ -296,54 +301,94 @@ class Home extends React.Component {
     this.mapMarkers=[];
   }
 
-  setMatchingMarkers(searchingGenre){
+  setMatchingGenres(searchingGenre){
+    this.setState({
+      genreFilter: searchingGenre
+    })
+    console.log("hello");
+
+    var currentTime = new Date();
+
     firebase.database().ref('/marker').once('value').then(function(snapshot) {
       snapshot.forEach(function(childSnapshot) {
+        // Check genre filter
         childSnapshot.val().genres.map(function(genre){
           if(genre.includes(searchingGenre)){
-            this.setMarkers(this.map, childSnapshot.val())
+            // Check time filter
+            switch(this.state.timeFilter) {
+              case 'Latest Year':
+                if(currentTime.getTime() - childSnapshot.val().unixtime < 31540000000){
+                  this.setMarkers(this.map, childSnapshot.val());
+                }
+                break;
+              case 'Latest Month':
+                if(currentTime.getTime() - childSnapshot.val().unixtime < 2628000000){
+                  this.setMarkers(this.map, childSnapshot.val());
+                }
+                break;
+              case 'Latest Week':
+                if(currentTime.getTime() - childSnapshot.val().unixtime < 604800000){
+                  this.setMarkers(this.map, childSnapshot.val());
+                }
+                break;
+              case 'Latest Day':
+                if(currentTime.getTime() - childSnapshot.val().unixtime < 86400000){
+                  this.setMarkers(this.map, childSnapshot.val());
+                }
+                break;
+              case 'All':
+                this.setMarkers(this.map, childSnapshot.val());
+            }
           }
         }.bind(this))
       }.bind(this))
     }.bind(this));
   }
 
+  filterSnapshotAndMap(snapshot, currentTime, timeInterval) {
+    snapshot.forEach(function(childSnapshot) {
+      //Check time filter
+      if(currentTime.getTime() - childSnapshot.val().unixtime < timeInterval){
+        // Check genre filter
+        childSnapshot.val().genres.map(function(genre){
+          if(genre.includes(this.state.genreFilter)){
+            this.setMarkers(this.map, childSnapshot.val());
+          }
+        }.bind(this))
+      }
+    }.bind(this))
+  }
 
   setMatchingTime(searchingTime){
-  //   firebase.database().ref('/marker').once('value').then(function(snapshot) {
-  //     var currentTime = new Date();
-  //     switch(searchingTime){
-  //       case 'Latest Year':
-  //         snapshot.forEach(function(childSnapshot) {
-  //           if(childSnapshot.val().year == currentTime.getFullYear()){
-  //             this.setMarkers(this.map, childSnapshot.val())
-  //           }
-  //         }.bind(this))
-  //         break;
-  //       case 'Latest Month': mappedSongs=month
-  //         snapshot.forEach(function(childSnapshot) {
-  //           if(childSnapshot.val().month == currentTime.getMonth()+1){
-  //             this.setMarkers(this.map, childSnapshot.val())
-  //           }
-  //         }.bind(this))
-  //       break;
-  //       case 'Latest Week': mappedSongs=childSnapshot.val().w
-  //
-  //     }
-  //     snapshot.forEach(function(childSnapshot) {
-  //       if(childSnapshot.val().year == currentTime.getFullYear()){
-  //         this.setMarkers(this.map, childSnapshot.val())
-  //       }
-  //     }.bind(this))
-  //   }.bind(this));
-  //
+    this.setState({
+      timeFilter: searchingTime
+    })
+
+    firebase.database().ref('/marker').once('value').then(function(snapshot) {
+      var currentTime = new Date();
+      switch(searchingTime) {
+        case 'Latest Year':
+          this.filterSnapshotAndMap(snapshot, currentTime, 31540000000);
+          break;
+        case 'Latest Month':
+          this.filterSnapshotAndMap(snapshot, currentTime, 2628000000);
+          break;
+        case 'Latest Week':
+          this.filterSnapshotAndMap(snapshot, currentTime, 604800000);
+          break;
+        case 'Latest Day':
+          this.filterSnapshotAndMap(snapshot, currentTime, 86400000);
+          break;
+        case 'All':
+          this.filterSnapshotAndMap(snapshot, currentTime, currentTime.getTime());
+      }
+    }.bind(this));
   }
   handleSubmit(searchingValue, searchingType){
     this.removeMarkers();
     if(searchingType == 'Genre'){
       this.setMatchingGenres(searchingValue);
-    }else{
-      console.log(searchingValue);
+    } else {
       this.setMatchingTime(searchingValue);
     }
   }
@@ -515,48 +560,6 @@ class Home extends React.Component {
         setInterval(function() {
           this.getSongData();
         }.bind(this), 30000)
-
-
-        // Currently playing song
-        // $.ajax({
-        //     url: 'https://api.spotify.com/v1/me/player/currently-playing',
-        //     headers: {
-        //       'Authorization': 'Bearer ' + access_token
-        //     },
-        //     success: function(response) {
-        //       console.log(response);
-        //       this.setState({
-        //         songname: response.item.name,
-        //         songimg: response.item.album.images[2].url,
-        //         artist: response.item.artists[0].name,
-        //         uri: response.item.uri
-        //       })
-        //       $.ajax({
-        //         url: response.item.artists[0].href,
-        //         success: function(artistDetails) {
-        //           console.log(artistDetails);
-        //           that.setState({
-        //             genres: artistDetails.genres
-        //           })
-        //         }.bind(this);
-        //       })
-        //
-        //     }.bind(this);
-        // });
-
-        // $.ajax({
-        //   url: 'https://api.spotify.com/v1/me',
-        //   headers: {
-        //     'Authorization': 'Bearer ' + access_token
-        //   },
-        //   success: function(response) {
-        //     that.setState({
-        //       username: response.id
-        //     })
-        //   }
-        // })
-
-
 
       } else {
           // Redirect user to login page - don't really know if this works cause I dunno how to test it

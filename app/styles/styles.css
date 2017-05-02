@@ -16,7 +16,8 @@ img[src^='./app/images/icon_bludot.png'] {
   transform: translate3d(0,0,0);
 }
 
-@media all and (min-device-width: 800px) {
+/* Computers */
+@media all and (min-device-width: 1025px) {
   .loginElement {
     margin-top: 100px;
   }
@@ -33,13 +34,31 @@ img[src^='./app/images/icon_bludot.png'] {
   }
 }
 
-@media all and (max-device-width: 800px) {
+/* Mobiles and iPads */
+@media all and (max-device-width: 1025px) {
   .loginElement {
     margin-top: 50px;
   }
   .wrapper {
     text-align: center;
-    background-image: url('../images/record.jpg');
+    background-color: #212121;
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    position: fixed;
+    color: white;
+    font-family: "Open Sans";
+  }
+}
+
+/* iPad pros */
+@media all and (min-device-height: 1023px) and (max-device-width: 1500px) {
+  .loginElement {
+    margin-top: 50px;
+  }
+  .wrapper {
+    text-align: center;
+    background-color: #212121;
     height: 100%;
     width: 100%;
     margin: 0;
