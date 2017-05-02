@@ -177,14 +177,14 @@ class Home extends React.Component {
           isLoading: false,
           error: true
         })
-      })
+      }.bind(this));
     }.bind(this))
     .catch(function(error) {
       this.setState({
         isLoading: false,
         error: true
       })
-    })
+    }.bind(this))
   }
 
   getUserData() {
@@ -525,7 +525,7 @@ class Home extends React.Component {
       if (access_token) {
         // Get a new access token every ~15 minutes, since they expire.
         setInterval(function() {
-          console.log("1700000 ms passed")
+          console.log("900000 ms passed")
           axios({
             method: 'get',
             url: '/refresh_token',
