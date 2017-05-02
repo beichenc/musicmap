@@ -3,9 +3,7 @@ var styles = require('../styles/styles.css');
 var Map = require('./Map.js');
 var axios = require('axios');
 var positionIcon = require('../images/icon_bludot.png');
-var Search = require('./Search.js');
-var moment = require('moment');
-var TimeFilter = require('./TimeFilter.js');
+var Search = require('./Search.js')
 
 class Home extends React.Component {
 
@@ -87,7 +85,6 @@ class Home extends React.Component {
       genres = genres + ", ";
     })
     genres = genres.substring(0, genres.length-2)
-
     var contentString = "<div class='infoWindow'><div class='songName'>"+mappedSong.songname+"</div><div><ul><li>Artist: "+mappedSong.artist+"</li><li>Genre: "+ genres +"</li><li>Mapped by: "+mappedSong.username+"</li><li>Date: "+mappedSong.year+"."+mappedSong.month+"."+mappedSong.day+"</li></ul></div><a href='"+mappedSong.uri+"'><button class='btn btn-success listenButton'>Listen</button></a></div>";
 
     var infowindow = new google.maps.InfoWindow({
@@ -298,7 +295,7 @@ class Home extends React.Component {
     this.mapMarkers=[];
   }
 
-  setMatchingGenres(searchingGenre){
+  setMatchingMarkers(searchingGenre){
     firebase.database().ref('/marker').once('value').then(function(snapshot) {
       snapshot.forEach(function(childSnapshot) {
         childSnapshot.val().genres.map(function(genre){
@@ -310,6 +307,7 @@ class Home extends React.Component {
     }.bind(this));
   }
 
+<<<<<<< HEAD
   setMatchingTime(searchingTime){
   //   firebase.database().ref('/marker').once('value').then(function(snapshot) {
   //     var currentTime = new Date();
@@ -347,11 +345,14 @@ class Home extends React.Component {
       console.log(searchingValue);
       this.setMatchingTime(searchingValue);
     }
+=======
+  handleSubmit(searchingGenre){
+    this.removeMarkers();
+    this.setMatchingMarkers(searchingGenre);
+>>>>>>> parent of e03c0d5... added filter by chosen time interval
   }
 
   componentDidMount() {
-    console.log(moment().subtract(1,'years').calendar());
-    console.log(moment().subtract(1,'weeks').calendar());
     var markerCounter = 0;
     // Read data from firebase and set to map
     firebase.database().ref('/marker').once('value').then(function(snapshot) {
@@ -486,7 +487,7 @@ class Home extends React.Component {
             access_token = response.data.access_token;
             window.location.replace(`/#/${access_token}/${refresh_token}`);
           })
-        }, 900000)
+        }, 1700000)
         // 1800000 ms = 30 min
 
         // Set state and get all data from Spotify API.
@@ -593,11 +594,20 @@ class Home extends React.Component {
               <button className="c-menu__close">&larr; Close Menu</button>
               <ul className="c-menu__items">
                 <li className="c-menu__item"><a href="#" className="c-menu__link">About</a></li>
+<<<<<<< HEAD
                 <li className="c-menu__item"><p>Filter by genre</p>
                   <div><Search onSubmit={this.handleSubmit} placeholder="Search genre..."/></div>
                 </li>
                 <li className="c-menu__item"><p>Filter by time</p></li>
                 <div><TimeFilter onSubmit={this.handleSubmit}/></div>
+=======
+                <li className="c-menu__item"><p>Search genre</p>
+                  <div><Search onSubmit={this.handleSubmit}/></div>
+                </li>
+                <li className="c-menu__item"><p>Search location</p></li>
+                <div>
+                </div>
+>>>>>>> parent of e03c0d5... added filter by chosen time interval
               </ul>
             </nav>
 

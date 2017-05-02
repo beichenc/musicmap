@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 var React = require('react');
 
 class TimeFilter extends React.Component {
@@ -27,3 +28,5 @@ class TimeFilter extends React.Component {
   }
 }
 module.exports = TimeFilter;
+=======
+>>>>>>> parent of e03c0d5... added filter by chosen time interval
