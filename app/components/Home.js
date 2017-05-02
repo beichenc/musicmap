@@ -4,7 +4,7 @@ var Map = require('./Map.js');
 var axios = require('axios');
 var positionIcon = require('../images/icon_bludot.png');
 var Search = require('./Search.js')
-var TiemFilter = require('./TimeFilter.js');
+var TimeFilter = require('./TimeFilter.js');
 
 class Home extends React.Component {
 
