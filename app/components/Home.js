@@ -33,7 +33,8 @@ class Home extends React.Component {
       error: false,
       mapError: false,
       timeFilter: 'All',
-      genreFilter: ''
+      genreFilter: '',
+      errorMsg: 'Oops...error with loading data'
     };
     this.map = {};
     this.mapMarkers=[];
@@ -96,7 +97,7 @@ class Home extends React.Component {
       })
       genres = genres.substring(0, genres.length-2)
     }
-    
+
     var contentString = "<div class='infoWindow'><div class='songName'>"+mappedSong.songname+"</div><div><ul><li>Artist: "+mappedSong.artist+"</li><li>Genre: "+ genres +"</li><li>Mapped by: "+mappedSong.username+"</li><li>Date: "+mappedSong.year+"."+mappedSong.month+"."+mappedSong.day+"</li></ul></div><a href='"+mappedSong.uri+"'><button class='btn btn-success listenButton'>Listen</button></a><p class='like'>Like</p></div>";
 
 
@@ -161,6 +162,11 @@ class Home extends React.Component {
   }
 
   getSongData() {
+    if (this.state.errorMsg != "Oops...error with loading data") {
+      this.setState({
+        errorMsg: "Oops...error with loading data"
+      })
+    }
     // Retrieving currently playing song
     axios({
       method: 'get',
@@ -169,7 +175,14 @@ class Home extends React.Component {
         'Authorization': 'Bearer ' + this.state.oauthDetails.access_token
       }
     }).then(function(response) {
+      console.log("currently playing")
       console.log(response);
+      // If there is no currently playing data - happens when user logs in the first time ever
+      if (response.data == "") {
+        this.setState({
+          errorMsg: "It looks like you're not listening to anything..."
+        })
+      }
       this.setState({
         songname: response.data.item.name,
         songimg: response.data.item.album.images[2].url,
@@ -185,6 +198,7 @@ class Home extends React.Component {
         })
       }.bind(this))
       .catch(function(error) {
+        console.log("error 1")
         this.setState({
           isLoading: false,
           error: true
@@ -192,6 +206,8 @@ class Home extends React.Component {
       }.bind(this));
     }.bind(this))
     .catch(function(error) {
+      console.log("error 2");
+      console.log(error);
       this.setState({
         isLoading: false,
         error: true
@@ -601,7 +617,7 @@ class Home extends React.Component {
             {this.state.isLoading ?
             <div className="loadingGif"></div> :
             <h1 className="currentlyPlaying">Currently playing: {this.state.songname}</h1>}
-            {this.state.error && <p>Oops...error with loading data</p>}
+            {this.state.error && <p>{this.state.errorMsg}</p>}
             {this.state.mapError && <p>Oops...error with geolocation</p>}
 
             <div id="o-wrapper" className="o-wrapper">
