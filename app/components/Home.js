@@ -162,11 +162,6 @@ class Home extends React.Component {
   }
 
   getSongData() {
-    if (this.state.errorMsg != "Oops...error with loading data") {
-      this.setState({
-        errorMsg: "Oops...error with loading data"
-      })
-    }
     // Retrieving currently playing song
     axios({
       method: 'get',
@@ -181,6 +176,10 @@ class Home extends React.Component {
       if (response.data == "") {
         this.setState({
           errorMsg: "It looks like you're not listening to anything..."
+        })
+      } else if (response.status = 401) {
+        this.setState({
+          errorMsg: "Oops...error with loading data"
         })
       }
       this.setState({
