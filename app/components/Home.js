@@ -5,6 +5,8 @@ var axios = require('axios');
 var positionIcon = require('../images/icon_bludot.png');
 var Search = require('./Search.js')
 var TimeFilter = require('./TimeFilter.js');
+var markercluster = require('../js/markercluster.js');
+// var GeolocationMarker = require('geolocation-marker');
 
 class Home extends React.Component {
 
@@ -70,7 +72,7 @@ class Home extends React.Component {
     //   type: 'poly'
     // };
     var marker = new google.maps.Marker({
-      position: {lat: mappedSong.lat ,lng: mappedSong.lng},
+      position: {lat: mappedSong.lat, lng: mappedSong.lng},
       map: map,
       icon: image,
       // shape: shape,
@@ -99,7 +101,6 @@ class Home extends React.Component {
     }
 
     var contentString = "<div class='infoWindow'><div class='songName'>"+mappedSong.songname+"</div><div><ul><li>Artist: "+mappedSong.artist+"</li><li>Genre: "+ genres +"</li><li>Mapped by: "+mappedSong.username+"</li><li>Date: "+mappedSong.year+"."+mappedSong.month+"."+mappedSong.day+"</li></ul></div><a href='"+mappedSong.uri+"'><button class='btn btn-success listenButton'>Listen</button></a><p class='like'>Like</p></div>";
-
 
     var infowindow = new google.maps.InfoWindow({
       content: contentString
@@ -233,7 +234,7 @@ class Home extends React.Component {
         isLoading: false,
         error: true
       })
-    })
+    }.bind(this))
   }
 
   getOwnData() {
@@ -325,8 +326,9 @@ class Home extends React.Component {
   }
 
   //Search bar for genres
-  removeMarkers(){
-    for(var i=0; i<this.mapMarkers.length; i++){
+  removeMarkers() {
+    console.log("remove markers " + this.mapMarkers.length);
+    for(var i=0; i<this.mapMarkers.length; i++) {
       this.mapMarkers[i].setMap(null)
     }
     this.mapMarkers=[];
@@ -344,6 +346,7 @@ class Home extends React.Component {
       snapshot.forEach(function(childSnapshot) {
         console.log(childSnapshot.key);
         // Check genre filter
+        // TODO: fix empty genres
         childSnapshot.val().genres.map(function(genre){
           if(genre.includes(searchingGenre)){
             // Check time filter
@@ -382,6 +385,7 @@ class Home extends React.Component {
       //Check time filter
       if(currentTime.getTime() - childSnapshot.val().unixtime < timeInterval){
         // Check genre filter
+        // TODO: fix empty genres
         childSnapshot.val().genres.map(function(genre){
           if(genre.includes(this.state.genreFilter)){
             this.setMarkers(this.map, childSnapshot.val());
@@ -426,6 +430,7 @@ class Home extends React.Component {
   }
 
   componentDidMount() {
+
     var markerCounter = 0;
     // Read data from firebase and set to map
     firebase.database().ref('/marker').once('value').then(function(snapshot) {
@@ -433,6 +438,12 @@ class Home extends React.Component {
           this.setMarkers(this.map, childSnapshot.val())
           markerCounter += 1;
       }.bind(this))
+
+      var markerCluster = new MarkerClusterer(this.map, this.mapMarkers,
+        {
+          imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m'
+        }
+      );
     }.bind(this));
 
     //var infoWindow = {};
@@ -443,6 +454,7 @@ class Home extends React.Component {
       scrollwheel: false,
       draggable: true
     });
+
 
     //
     // $(window).resize(function() {
@@ -482,7 +494,7 @@ class Home extends React.Component {
           // The anchor for this image is the base of the flagpole at (0, 32).
           anchor: new google.maps.Point(39, 39)
         };
-        console.log(markerCounter);
+        // console.log(markerCounter);
         marker = new google.maps.Marker({
           position: pos,
           map: this.map,
@@ -490,6 +502,7 @@ class Home extends React.Component {
           zIndex: markerCounter + 1,
           optimized: false
         });
+        // var GeoMarker = new GeolocationMarker(this.map);
 
 
         // var infoWindow = new google.maps.InfoWindow({
