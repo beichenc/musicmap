@@ -39,6 +39,10 @@ class Home extends React.Component {
     this.mapMarkers=[];
   }
 
+  like() {
+    console.log("like");
+  }
+
   // Puts a marker on the map for the specific song.
   setMarkers(map, mappedSong) {
     // Adds markers to the map.
@@ -84,18 +88,26 @@ class Home extends React.Component {
 
 
     var genres ="";
-    mappedSong.genres.map(function(genre){
-      genres = genres + genre;
-      genres = genres + ", ";
-    })
-    genres = genres.substring(0, genres.length-2)
-    var contentString = "<div class='infoWindow'><div class='songName'>"+mappedSong.songname+"</div><div><ul><li>Artist: "+mappedSong.artist+"</li><li>Genre: "+ genres +"</li><li>Mapped by: "+mappedSong.username+"</li><li>Date: "+mappedSong.year+"."+mappedSong.month+"."+mappedSong.day+"</li></ul></div><a href='"+mappedSong.uri+"'><button class='btn btn-success listenButton'>Listen</button></a></div>";
+    console.log(mappedSong.genres);
+    if (mappedSong.genres != undefined) {
+      mappedSong.genres.map(function(genre){
+        genres = genres + genre;
+        genres = genres + ", ";
+      })
+      genres = genres.substring(0, genres.length-2)
+    }
+    
+    var contentString = "<div class='infoWindow'><div class='songName'>"+mappedSong.songname+"</div><div><ul><li>Artist: "+mappedSong.artist+"</li><li>Genre: "+ genres +"</li><li>Mapped by: "+mappedSong.username+"</li><li>Date: "+mappedSong.year+"."+mappedSong.month+"."+mappedSong.day+"</li></ul></div><a href='"+mappedSong.uri+"'><button class='btn btn-success listenButton'>Listen</button></a><p class='like'>Like</p></div>";
+
 
     var infowindow = new google.maps.InfoWindow({
       content: contentString
     });
     marker.addListener('click', function() {
       infowindow.open(map, marker);
+      $('.like').on('click', function() {
+        console.log("like");
+      })
     })
 
     // google.maps.event.addListener(infowindow, 'domready', function() {
@@ -314,6 +326,7 @@ class Home extends React.Component {
 
     firebase.database().ref('/marker').once('value').then(function(snapshot) {
       snapshot.forEach(function(childSnapshot) {
+        console.log(childSnapshot.key);
         // Check genre filter
         childSnapshot.val().genres.map(function(genre){
           if(genre.includes(searchingGenre)){
