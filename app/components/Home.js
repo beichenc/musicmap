@@ -179,14 +179,15 @@ class Home extends React.Component {
         })
       } else if (response.status = 401) {
         this.setState({
-          errorMsg: "Oops...error with loading data"
+          errorMsg: "Oops...error with loading data kbaflkalkjfkl"
         })
       }
       this.setState({
         songname: response.data.item.name,
         songimg: response.data.item.album.images[2].url,
         artist: response.data.item.artists[0].name,
-        uri: response.data.item.uri
+        uri: response.data.item.uri,
+        error: false
       })
       // Retrieving genre data
       axios.get(response.data.item.artists[0].href)
