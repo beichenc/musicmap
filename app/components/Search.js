@@ -17,12 +17,12 @@ class Search extends React.Component {
   }
   handleSubmit(event){
     event.preventDefault();
-    this.props.onSubmit(this.state.searchingGenre);
+    this.props.onSubmit(this.state.searchingGenre, 'Genre');
   }
   handleKeyUp(event){
     event.preventDefault();
     if(event.keyCode==13){
-      this.props.onSubmit(this.state.searchingGenre);
+      this.props.onSubmit(this.state.searchingGenre, 'Genre');
     }
   }
   render(){
