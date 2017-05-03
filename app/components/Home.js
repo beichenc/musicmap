@@ -2,6 +2,9 @@ var React = require('react')
 var styles = require('../styles/styles.css');
 var Map = require('./Map.js');
 var axios = require('axios');
+var positionIcon = require('../images/icon_bludot.png');
+var Search = require('./Search.js')
+var TimeFilter = require('./TimeFilter.js');
 
 class Home extends React.Component {
 
@@ -10,6 +13,10 @@ class Home extends React.Component {
 
     this.mapSong = this.mapSong.bind(this);
     this.componentDidMount = this.componentDidMount.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
+    this.setMatchingTime = this.setMatchingTime.bind(this);
+    this.setMatchingGenres = this.setMatchingGenres.bind(this);
+
 
     this.state = {
       songname: "",
@@ -24,9 +31,12 @@ class Home extends React.Component {
       mapLoading: true,
       isLoading: true,
       error: false,
-      mapError: false
+      mapError: false,
+      timeFilter: 'All',
+      genreFilter: ''
     };
-    this.map = {}
+    this.map = {};
+    this.mapMarkers=[];
   }
 
   // Puts a marker on the map for the specific song.
@@ -45,7 +55,7 @@ class Home extends React.Component {
       // The origin for this image is (0, 0).
       origin: new google.maps.Point(0, 0),
       // The anchor for this image is the base of the flagpole at (0, 32).
-      anchor: new google.maps.Point(0, 32)
+      anchor: new google.maps.Point(32, 32)
     };
     // Shapes define the clickable region of the icon. The type defines an HTML
     // <area> element 'poly' which traces out a polygon as a series of X,Y points.
@@ -59,9 +69,19 @@ class Home extends React.Component {
       map: map,
       icon: image,
       // shape: shape,
-      title: mappedSong.songname
+      title: mappedSong.songname,
+      optimized: false,
+      zIndex: 1
     });
+    this.mapMarkers.push(marker);
     console.log(marker)
+    // this.setState({
+    //   markerCounter: this.state.markerCounter + 1
+    // }, () => {
+    //   console.log(this.state.markerCounter);
+    // })
+
+
 
     var genres ="";
     mappedSong.genres.map(function(genre){
@@ -99,6 +119,7 @@ class Home extends React.Component {
   // Sends the song data to Firebase and calls setMarkers().
   mapSong() {
     var currentdate = new Date();
+    //console.log(currentdate.getTime());
     var mappedSong = {
       username: this.state.username,
       songname: this.state.songname,
@@ -108,6 +129,7 @@ class Home extends React.Component {
       year: currentdate.getFullYear(),
       month:currentdate.getMonth()+1,
       day:currentdate.getDate(),
+      unixtime: currentdate.getTime(),
       lat: this.state.pos.lat,
       lng: this.state.pos.lng,
       uri: this.state.uri
@@ -155,14 +177,14 @@ class Home extends React.Component {
           isLoading: false,
           error: true
         })
-      })
+      }.bind(this));
     }.bind(this))
     .catch(function(error) {
       this.setState({
         isLoading: false,
         error: true
       })
-    })
+    }.bind(this))
   }
 
   getUserData() {
@@ -200,21 +222,21 @@ class Home extends React.Component {
         })
       })
 
-    axios.get('https://178.62.2.218/api/todos')
-      .then(function(response) {
-        console.log("From Digital Ocean: ");
-        console.log(response);
-      })
-      .catch(function(error) {
-        this.setState({
-          isLoading: false,
-          error: true
-        })
-      })
+    // axios.get('https://178.62.2.218/api/todos')
+    //   .then(function(response) {
+    //     console.log("From Digital Ocean: ");
+    //     console.log(response);
+    //   })
+    //   .catch(function(error) {
+    //     this.setState({
+    //       isLoading: false,
+    //       error: true
+    //     })
+    //   }.bind(this))
   }
 
   // Sets the user's position to state.
-  setPosition(position) {
+  ourSetPosition(position) {
 
     var pos = {
       lat: position.coords.latitude,
@@ -243,25 +265,28 @@ class Home extends React.Component {
     // Set CSS for the control border.
     var controlUI = document.createElement('div');
     controlUI.style.backgroundColor = '#fff';
+    controlUI.style.backgroundImage = 'url(https://maps.gstatic.com/tactile/mylocation/mylocation-sprite-1x.png)';
+    controlUI.style.height = '23px';
+    controlUI.style.width = '23px';
+    controlUI.style.marginRight = '12px';
     controlUI.style.border = '2px solid #fff';
     controlUI.style.borderRadius = '3px';
     controlUI.style.boxShadow = '0 2px 6px rgba(0,0,0,.3)';
     controlUI.style.cursor = 'pointer';
-    controlUI.style.marginBottom = '22px';
+    controlUI.style.marginBottom = '5px';
     controlUI.style.textAlign = 'center';
     controlUI.title = 'Click to recenter the map';
     controlDiv.appendChild(controlUI);
 
-    // Set CSS for the control interior.
-    var controlText = document.createElement('div');
-    controlText.style.color = 'rgb(25,25,25)';
-    controlText.style.fontFamily = 'Roboto,Arial,sans-serif';
-    controlText.style.fontSize = '16px';
-    controlText.style.lineHeight = '38px';
-    controlText.style.paddingLeft = '5px';
-    controlText.style.paddingRight = '5px';
-    controlText.innerHTML = 'Center Map';
-    controlUI.appendChild(controlText);
+    // var controlText = document.createElement('div');
+    // controlText.style.color = 'rgb(25,25,25)';
+    // controlText.style.fontFamily = 'Roboto,Arial,sans-serif';
+    // controlText.style.fontSize = '16px';
+    // controlText.style.lineHeight = '38px';
+    // controlText.style.paddingLeft = '5px';
+    // controlText.style.paddingRight = '5px';
+    // // controlText.innerHTML = 'Center Map';
+    // controlUI.appendChild(controlText);
 
     // Setup the click event listeners: simply set the map to Chicago.
     controlUI.addEventListener('click', function() {
@@ -271,11 +296,113 @@ class Home extends React.Component {
 
   }
 
+  //Search bar for genres
+  removeMarkers(){
+    for(var i=0; i<this.mapMarkers.length; i++){
+      this.mapMarkers[i].setMap(null)
+    }
+    this.mapMarkers=[];
+  }
+
+  setMatchingGenres(searchingGenre){
+    this.setState({
+      genreFilter: searchingGenre
+    })
+    console.log("hello");
+
+    var currentTime = new Date();
+
+    firebase.database().ref('/marker').once('value').then(function(snapshot) {
+      snapshot.forEach(function(childSnapshot) {
+        // Check genre filter
+        childSnapshot.val().genres.map(function(genre){
+          if(genre.includes(searchingGenre)){
+            // Check time filter
+            switch(this.state.timeFilter) {
+              case 'Latest Year':
+                if(currentTime.getTime() - childSnapshot.val().unixtime < 31540000000){
+                  this.setMarkers(this.map, childSnapshot.val());
+                }
+                break;
+              case 'Latest Month':
+                if(currentTime.getTime() - childSnapshot.val().unixtime < 2628000000){
+                  this.setMarkers(this.map, childSnapshot.val());
+                }
+                break;
+              case 'Latest Week':
+                if(currentTime.getTime() - childSnapshot.val().unixtime < 604800000){
+                  this.setMarkers(this.map, childSnapshot.val());
+                }
+                break;
+              case 'Latest Day':
+                if(currentTime.getTime() - childSnapshot.val().unixtime < 86400000){
+                  this.setMarkers(this.map, childSnapshot.val());
+                }
+                break;
+              case 'All':
+                this.setMarkers(this.map, childSnapshot.val());
+            }
+          }
+        }.bind(this))
+      }.bind(this))
+    }.bind(this));
+  }
+
+  filterSnapshotAndMap(snapshot, currentTime, timeInterval) {
+    snapshot.forEach(function(childSnapshot) {
+      //Check time filter
+      if(currentTime.getTime() - childSnapshot.val().unixtime < timeInterval){
+        // Check genre filter
+        childSnapshot.val().genres.map(function(genre){
+          if(genre.includes(this.state.genreFilter)){
+            this.setMarkers(this.map, childSnapshot.val());
+          }
+        }.bind(this))
+      }
+    }.bind(this))
+  }
+
+  setMatchingTime(searchingTime){
+    this.setState({
+      timeFilter: searchingTime
+    })
+
+    firebase.database().ref('/marker').once('value').then(function(snapshot) {
+      var currentTime = new Date();
+      switch(searchingTime) {
+        case 'Latest Year':
+          this.filterSnapshotAndMap(snapshot, currentTime, 31540000000);
+          break;
+        case 'Latest Month':
+          this.filterSnapshotAndMap(snapshot, currentTime, 2628000000);
+          break;
+        case 'Latest Week':
+          this.filterSnapshotAndMap(snapshot, currentTime, 604800000);
+          break;
+        case 'Latest Day':
+          this.filterSnapshotAndMap(snapshot, currentTime, 86400000);
+          break;
+        case 'All':
+          this.filterSnapshotAndMap(snapshot, currentTime, currentTime.getTime());
+      }
+    }.bind(this));
+  }
+  handleSubmit(searchingValue, searchingType){
+    this.removeMarkers();
+    if(searchingType == 'Genre'){
+      this.setMatchingGenres(searchingValue);
+    } else {
+      this.setMatchingTime(searchingValue);
+    }
+  }
+
   componentDidMount() {
+    var markerCounter = 0;
     // Read data from firebase and set to map
     firebase.database().ref('/marker').once('value').then(function(snapshot) {
       snapshot.forEach(function(childSnapshot) {
           this.setMarkers(this.map, childSnapshot.val())
+          markerCounter += 1;
       }.bind(this))
     }.bind(this));
 
@@ -288,12 +415,16 @@ class Home extends React.Component {
       draggable: true
     });
 
-    $(window).resize(function() {
-      google.maps.event.trigger(map, "resize");
-    })
+    //
+    // $(window).resize(function() {
+    //   google.maps.event.trigger(map, "resize");
+    // })
 
 
     if (navigator.geolocation) {
+      console.log("nagivator location");
+
+      var marker;
 
       // On page load, get current position and center the map on that position.
       navigator.geolocation.getCurrentPosition(function(position) {
@@ -309,15 +440,29 @@ class Home extends React.Component {
           }
         })
 
-        this.setPosition(position);
+        this.ourSetPosition(position);
         var pos = {
           lat: position.coords.latitude,
           lng: position.coords.longitude
         };
-        // var marker = new google.maps.Marker({
-        //   position: pos,
-        //   map: this.map
-        // });
+
+        var image = {
+          url: positionIcon,
+          // The origin for this image is (0, 0).
+          origin: new google.maps.Point(0, 0),
+          // The anchor for this image is the base of the flagpole at (0, 32).
+          anchor: new google.maps.Point(39, 39)
+        };
+        console.log(markerCounter);
+        marker = new google.maps.Marker({
+          position: pos,
+          map: this.map,
+          icon: image,
+          zIndex: markerCounter + 1,
+          optimized: false
+        });
+
+
         // var infoWindow = new google.maps.InfoWindow({
         //   content: "<p style='color: black;'> Location found. </p>"
         // })
@@ -332,14 +477,24 @@ class Home extends React.Component {
           isLoading: false,
           mapError: true
         })
-      }.bind(this));
+      }.bind(this), {
+        enableHighAccuracy: true
+      });
 
       //Watch the user's position without centering the map each time.
       navigator.geolocation.watchPosition(function(position) {
-        this.setPosition(position);
+        console.log("watch position");
+        this.ourSetPosition(position);
+        marker.setPosition({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        })
       }.bind(this), function() {
 
-      }.bind(this));
+
+      }.bind(this), {
+        enableHighAccuracy: true
+      });
 
       // Create a button to center the map.
       var centerControlDiv = document.createElement('div');
@@ -368,9 +523,9 @@ class Home extends React.Component {
       alert('There was an error during the authentication');
     } else {
       if (access_token) {
-        // Get a new access token every ~30 minutes, since they expire.
+        // Get a new access token every ~15 minutes, since they expire.
         setInterval(function() {
-          console.log("1700000 ms passed")
+          console.log("900000 ms passed")
           axios({
             method: 'get',
             url: '/refresh_token',
@@ -380,8 +535,14 @@ class Home extends React.Component {
           }).then(function(response) {
             access_token = response.data.access_token;
             window.location.replace(`/#/${access_token}/${refresh_token}`);
-          })
-        }, 1700000)
+            this.setState({
+              oauthDetails: {
+                access_token: access_token,
+                refresh_token: refresh_token
+              }
+            })
+          }.bind(this))
+        }.bind(this), 900000)
         // 1800000 ms = 30 min
 
         // Set state and get all data from Spotify API.
@@ -411,48 +572,6 @@ class Home extends React.Component {
         setInterval(function() {
           this.getSongData();
         }.bind(this), 30000)
-
-
-        // Currently playing song
-        // $.ajax({
-        //     url: 'https://api.spotify.com/v1/me/player/currently-playing',
-        //     headers: {
-        //       'Authorization': 'Bearer ' + access_token
-        //     },
-        //     success: function(response) {
-        //       console.log(response);
-        //       this.setState({
-        //         songname: response.item.name,
-        //         songimg: response.item.album.images[2].url,
-        //         artist: response.item.artists[0].name,
-        //         uri: response.item.uri
-        //       })
-        //       $.ajax({
-        //         url: response.item.artists[0].href,
-        //         success: function(artistDetails) {
-        //           console.log(artistDetails);
-        //           that.setState({
-        //             genres: artistDetails.genres
-        //           })
-        //         }.bind(this);
-        //       })
-        //
-        //     }.bind(this);
-        // });
-
-        // $.ajax({
-        //   url: 'https://api.spotify.com/v1/me',
-        //   headers: {
-        //     'Authorization': 'Bearer ' + access_token
-        //   },
-        //   success: function(response) {
-        //     that.setState({
-        //       username: response.id
-        //     })
-        //   }
-        // })
-
-
 
       } else {
           // Redirect user to login page - don't really know if this works cause I dunno how to test it
@@ -487,10 +606,14 @@ class Home extends React.Component {
             <nav id="c-menu--slide-left" className="c-menu c-menu--slide-left">
               <button className="c-menu__close">&larr; Close Menu</button>
               <ul className="c-menu__items">
-                <li className="c-menu__item"><a href="#" className="c-menu__link">Filters</a></li>
-                <li className="c-menu__item"><a href="#" className="c-menu__link">Search location</a></li>
-                <li className="c-menu__item"><a href="#" className="c-menu__link">Playlists</a></li>
                 <li className="c-menu__item"><a href="#" className="c-menu__link">About</a></li>
+
+                <li className="c-menu__item"><p>Filter by genre</p>
+                  <div><Search onSubmit={this.handleSubmit} placeholder="Search genre..."/></div>
+                </li>
+                <li className="c-menu__item"><p>Filter by time</p></li>
+                <div><TimeFilter onSubmit={this.handleSubmit}/></div>
+
               </ul>
             </nav>
 
