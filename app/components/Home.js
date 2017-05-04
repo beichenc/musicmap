@@ -519,6 +519,54 @@ class Home extends React.Component {
       }.bind(this))
   }
 
+  // Slider functions
+
+  extend(a, b) {
+    for(var key in b) {
+      if(b.hasOwnProperty(key)) {
+        a[key] = b[key];
+      }
+    }
+    return a;
+  }
+
+  each(collection, callback) {
+    for (var i = 0; i < collection.length; i++) {
+      var item = collection[i];
+      callback(item);
+    }
+  }
+
+  openSlider(body, wrapper, menu, mask, menuOpeners) {
+    body.classList.add('has-active-menu');
+    wrapper.classList.add('has-' + 'slide-left');
+    menu.classList.add('is-active');
+    mask.classList.add('is-active');
+    this.disableMenuOpeners(menuOpeners);
+  }
+
+  closeSlider(body, wrapper, menu, mask, menuOpeners) {
+    body.classList.remove('has-active-menu');
+    wrapper.classList.remove('has-' + 'slide-left');
+    menu.classList.remove('is-active');
+    mask.classList.remove('is-active');
+    this.enableMenuOpeners(menuOpeners);
+  }
+
+  disableMenuOpeners(menuOpeners) {
+    this.each(menuOpeners, function(item) {
+      item.disabled = true;
+    });
+  }
+
+  enableMenuOpeners(menuOpeners) {
+    this.each(menuOpeners, function(item) {
+      item.disabled = false;
+    });
+  }
+
+  // End slider functions
+
   componentDidMount() {
     // const { cookies } = this.props;
     // cookies.set('hello', 'hello')
@@ -526,6 +574,34 @@ class Home extends React.Component {
     // console.log(this.props)
     // console.log(cookie);
     console.log("component did mount");
+
+    // Slider
+    var body = document.body;
+    var wrapper = document.querySelector('#o-wrapper');
+    var mask = document.querySelector('#c-mask');
+    var menu = document.querySelector('#c-menu--' + 'slide-left');
+    var closeBtn = menu.querySelector('.c-menu__close');
+    var menuOpeners = document.querySelectorAll('.c-button');
+
+    closeBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      this.closeSlider(body, wrapper, menu, mask, menuOpeners);
+    }.bind(this));
+
+    // Event for clicks on the mask.
+    mask.addEventListener('click', function(e) {
+      e.preventDefault();
+      this.closeSlider(body, wrapper, menu, mask, menuOpeners);
+    }.bind(this));
+
+    var slideLeftBtn = document.querySelector('#c-button--slide-left');
+
+    slideLeftBtn.addEventListener('click', function(e) {
+      e.preventDefault;
+      this.openSlider(body, wrapper, menu, mask, menuOpeners);
+    }.bind(this));
+
+    // End slider
 
     const cookies = new Cookies();
 
@@ -544,8 +620,7 @@ class Home extends React.Component {
       );
     }.bind(this));
 
-    //var infoWindow = {};
-
+    // Creating a map
     this.map = new google.maps.Map(document.getElementById('map'), {
       zoom: 15,
       center: {lat: -34.397, lng: 150.644},
@@ -553,13 +628,7 @@ class Home extends React.Component {
       draggable: true
     });
 
-
-    //
-    // $(window).resize(function() {
-    //   google.maps.event.trigger(map, "resize");
-    // })
-
-
+    // Geolocation
     if (navigator.geolocation) {
       console.log("nagivator location");
 
@@ -601,14 +670,7 @@ class Home extends React.Component {
           zIndex: markerCounter + 1,
           optimized: false
         });
-        // var GeoMarker = new GeolocationMarker(this.map);
 
-
-        // var infoWindow = new google.maps.InfoWindow({
-        //   content: "<p style='color: black;'> Location found. </p>"
-        // })
-        // infoWindow.setPosition(pos);
-        // infoWindow.open(this.map);
         this.map.setCenter(pos)
 
 
@@ -653,7 +715,7 @@ class Home extends React.Component {
       })
     }
 
-    var menu = require('../js/menu.js');
+    // var menu = require('../js/menu.js');
 
     // Spotify
     var access_token = this.props.routeParams.access_token,
