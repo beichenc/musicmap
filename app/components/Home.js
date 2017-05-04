@@ -601,6 +601,12 @@ class Home extends React.Component {
       this.openSlider(body, wrapper, menu, mask, menuOpeners);
     }.bind(this));
 
+    var aboutButton = document.querySelector('.aboutButton');
+    aboutButton.addEventListener('click', function(e) {
+      e.preventDefault;
+      this.closeSlider(body, wrapper, menu, mask, menuOpeners);
+    }.bind(this))
+
     // End slider
 
     const cookies = new Cookies();
@@ -813,7 +819,7 @@ class Home extends React.Component {
             <nav id="c-menu--slide-left" className="c-menu c-menu--slide-left">
               <button className="c-menu__close">&larr; Close Menu</button>
               <ul className="c-menu__items">
-                <li className="c-menu__item"><a href="/#/about" className="c-menu__link">About</a></li>
+                <li className="c-menu__item"><a href="/#/about" className="c-menu__link aboutButton">About</a></li>
 
                 <li className="c-menu__item"><p>Filter by genre</p>
                   <div><Search onSubmit={this.handleSubmit} placeholder="Search genre..."/></div>
