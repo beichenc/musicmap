@@ -6,6 +6,7 @@ var IndexRoute = ReactRouter.IndexRoute;
 var Home = require('../components/Home');
 var Main = require('../components/Main');
 var Login = require('../components/Login');
+var About = require('../components/About');
 var hashHistory = ReactRouter.hashHistory
 
 
@@ -15,6 +16,7 @@ var routes = (
       <IndexRoute component={Login}/>
       <Route path="/:access_token/:refresh_token" component={Home}/>
       <Route path="/test" component={Home}/>
+      <Route path="/about" component={About}/>
     </Route>
   </Router>
 )

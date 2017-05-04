@@ -17,6 +17,9 @@ import Cookies from 'universal-cookie';
 
 
 // var GeolocationMarker = require('geolocation-marker');
+MarkerClusterer.prototype.onRemove = function () {
+  this.setReady_(true);
+};
 
 class Home extends React.Component {
 
@@ -28,6 +31,8 @@ class Home extends React.Component {
     this.handleSubmit = this.handleSubmit.bind(this);
     this.setMatchingTime = this.setMatchingTime.bind(this);
     this.setMatchingGenres = this.setMatchingGenres.bind(this);
+
+    console.log("constructor");
 
 
     this.state = {
@@ -50,6 +55,7 @@ class Home extends React.Component {
     };
     this.map = {};
     this.mapMarkers=[];
+    this.markerCluster = {};
   }
 
   like() {
@@ -91,7 +97,7 @@ class Home extends React.Component {
       zIndex: 1
     });
     this.mapMarkers.push(marker);
-    console.log(marker)
+    // console.log(marker)
     // this.setState({
     //   markerCounter: this.state.markerCounter + 1
     // }, () => {
@@ -101,7 +107,7 @@ class Home extends React.Component {
 
 
     var genres ="";
-    console.log(mappedSong.genres);
+    // console.log(mappedSong.genres);
     if (mappedSong.genres != undefined) {
       mappedSong.genres.map(function(genre){
         genres = genres + genre;
@@ -203,7 +209,7 @@ class Home extends React.Component {
       // Retrieving genre data
       axios.get(response.data.item.artists[0].href)
         .then(function(artistDetails) {
-        console.log(artistDetails);
+        // console.log(artistDetails);
         this.setState({
           genres: artistDetails.data.genres
         })
@@ -342,6 +348,38 @@ class Home extends React.Component {
       this.mapMarkers[i].setMap(null)
     }
     this.mapMarkers=[];
+    this.markerCluster.clearMarkers();
+    // this.markerCluster.setMap(null);
+    var numberOfMarkersInCluster = this.markerCluster.getMarkers().length;
+    console.log("# markers in cluster " + numberOfMarkersInCluster);
+  }
+
+  setMatchingTimeAfterCheckingGenres(currentTime, childSnapshot) {
+    // Check time filter
+    switch(this.state.timeFilter) {
+      case 'Latest Year':
+        if(currentTime.getTime() - childSnapshot.val().unixtime < 31540000000){
+          this.setMarkers(this.map, childSnapshot.val());
+        }
+        break;
+      case 'Latest Month':
+        if(currentTime.getTime() - childSnapshot.val().unixtime < 2628000000){
+          this.setMarkers(this.map, childSnapshot.val());
+        }
+        break;
+      case 'Latest Week':
+        if(currentTime.getTime() - childSnapshot.val().unixtime < 604800000){
+          this.setMarkers(this.map, childSnapshot.val());
+        }
+        break;
+      case 'Latest Day':
+        if(currentTime.getTime() - childSnapshot.val().unixtime < 86400000){
+          this.setMarkers(this.map, childSnapshot.val());
+        }
+        break;
+      case 'All':
+        this.setMarkers(this.map, childSnapshot.val());
+    }
   }
 
   setMatchingGenres(searchingGenre){
@@ -354,39 +392,39 @@ class Home extends React.Component {
 
     firebase.database().ref('/marker').once('value').then(function(snapshot) {
       snapshot.forEach(function(childSnapshot) {
-        console.log(childSnapshot.key);
+        // console.log(childSnapshot.key);
         // Check genre filter
-        // TODO: fix empty genres
-        childSnapshot.val().genres.map(function(genre){
-          if(genre.includes(searchingGenre)){
-            // Check time filter
-            switch(this.state.timeFilter) {
-              case 'Latest Year':
-                if(currentTime.getTime() - childSnapshot.val().unixtime < 31540000000){
-                  this.setMarkers(this.map, childSnapshot.val());
-                }
-                break;
-              case 'Latest Month':
-                if(currentTime.getTime() - childSnapshot.val().unixtime < 2628000000){
-                  this.setMarkers(this.map, childSnapshot.val());
-                }
-                break;
-              case 'Latest Week':
-                if(currentTime.getTime() - childSnapshot.val().unixtime < 604800000){
-                  this.setMarkers(this.map, childSnapshot.val());
-                }
-                break;
-              case 'Latest Day':
-                if(currentTime.getTime() - childSnapshot.val().unixtime < 86400000){
-                  this.setMarkers(this.map, childSnapshot.val());
-                }
-                break;
-              case 'All':
-                this.setMarkers(this.map, childSnapshot.val());
+        // If genres is not empty
+        if (childSnapshot.val().genres != undefined) {
+          console.log("checking genre")
+          var matchesGenre = false;
+          childSnapshot.val().genres.map(function(genre){
+            console.log(genre);
+            console.log(searchingGenre);
+            console.log(genre.includes(searchingGenre));
+            if(genre.includes(searchingGenre)){
+              console.log("added to map");
+              matchesGenre = true;
             }
+          }.bind(this))
+          if (matchesGenre) {
+            this.setMatchingTimeAfterCheckingGenres(currentTime, childSnapshot);
           }
-        }.bind(this))
+        // If genres is empty
+        } else {
+          console.log("not checking genre")
+          this.setMatchingTimeAfterCheckingGenres(currentTime, childSnapshot);
+        }
+
       }.bind(this))
+      console.log(this.mapMarkers);
+      console.log(this.mapMarkers.length)
+      this.markerCluster = new MarkerClusterer(this.map, this.mapMarkers,
+        {
+          imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m'
+        }
+      );
+
     }.bind(this));
   }
 
@@ -394,13 +432,22 @@ class Home extends React.Component {
     snapshot.forEach(function(childSnapshot) {
       //Check time filter
       if(currentTime.getTime() - childSnapshot.val().unixtime < timeInterval){
-        // Check genre filter
-        // TODO: fix empty genres
-        childSnapshot.val().genres.map(function(genre){
-          if(genre.includes(this.state.genreFilter)){
+        // If genres is not empty
+        if (childSnapshot.val().genres != undefined) {
+          // Check genre filter
+          var matchesGenre = false;
+          childSnapshot.val().genres.map(function(genre){
+            if(genre.includes(this.state.genreFilter)){
+              matchesGenre = true;
+            }
+          }.bind(this))
+          if (matchesGenre) {
             this.setMarkers(this.map, childSnapshot.val());
           }
-        }.bind(this))
+        // If genre is empty
+        } else {
+          this.setMarkers(this.map, childSnapshot.val());
+        }
       }
     }.bind(this))
   }
@@ -428,6 +475,13 @@ class Home extends React.Component {
         case 'All':
           this.filterSnapshotAndMap(snapshot, currentTime, currentTime.getTime());
       }
+      this.markerCluster = new MarkerClusterer(this.map, this.mapMarkers,
+        {
+          imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m'
+        }
+      );
+
+
     }.bind(this));
   }
   handleSubmit(searchingValue, searchingType){
@@ -459,7 +513,7 @@ class Home extends React.Component {
   }
 
   getAllData() {
-    console.log(this.state.oauthDetails.access_token);
+    // console.log(this.state.oauthDetails.access_token);
     axios.all([this.getSongData(), this.getUserData(), this.getOwnData()])
       .then(function(acct, perms) {
         this.setState({
@@ -480,6 +534,7 @@ class Home extends React.Component {
     // console.log(cookies)
     // console.log(this.props)
     // console.log(cookie);
+    console.log("component did mount");
 
     const cookies = new Cookies();
 
@@ -491,7 +546,7 @@ class Home extends React.Component {
           markerCounter += 1;
       }.bind(this))
 
-      var markerCluster = new MarkerClusterer(this.map, this.mapMarkers,
+      this.markerCluster = new MarkerClusterer(this.map, this.mapMarkers,
         {
           imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m'
         }
@@ -522,6 +577,7 @@ class Home extends React.Component {
       // On page load, get current position and center the map on that position.
       navigator.geolocation.getCurrentPosition(function(position) {
 
+        console.log("got current position once");
         // Not loading anymore
         this.setState({
           mapLoading: false
@@ -699,7 +755,7 @@ class Home extends React.Component {
             <nav id="c-menu--slide-left" className="c-menu c-menu--slide-left">
               <button className="c-menu__close">&larr; Close Menu</button>
               <ul className="c-menu__items">
-                <li className="c-menu__item"><a href="#" className="c-menu__link">About</a></li>
+                <li className="c-menu__item"><a href="/#/about" className="c-menu__link">About</a></li>
 
                 <li className="c-menu__item"><p>Filter by genre</p>
                   <div><Search onSubmit={this.handleSubmit} placeholder="Search genre..."/></div>
