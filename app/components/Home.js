@@ -56,6 +56,7 @@ class Home extends React.Component {
     this.map = {};
     this.mapMarkers=[];
     this.markerCluster = {};
+    this.watchId = null;
   }
 
   like() {
@@ -343,15 +344,12 @@ class Home extends React.Component {
 
   //Search bar for genres
   removeMarkers() {
-    console.log("remove markers " + this.mapMarkers.length);
     for(var i=0; i<this.mapMarkers.length; i++) {
       this.mapMarkers[i].setMap(null)
     }
     this.mapMarkers=[];
     this.markerCluster.clearMarkers();
     // this.markerCluster.setMap(null);
-    var numberOfMarkersInCluster = this.markerCluster.getMarkers().length;
-    console.log("# markers in cluster " + numberOfMarkersInCluster);
   }
 
   setMatchingTimeAfterCheckingGenres(currentTime, childSnapshot) {
@@ -386,7 +384,6 @@ class Home extends React.Component {
     this.setState({
       genreFilter: searchingGenre
     })
-    console.log("hello");
 
     var currentTime = new Date();
 
@@ -396,14 +393,10 @@ class Home extends React.Component {
         // Check genre filter
         // If genres is not empty
         if (childSnapshot.val().genres != undefined) {
-          console.log("checking genre")
           var matchesGenre = false;
           childSnapshot.val().genres.map(function(genre){
-            console.log(genre);
-            console.log(searchingGenre);
-            console.log(genre.includes(searchingGenre));
+
             if(genre.includes(searchingGenre)){
-              console.log("added to map");
               matchesGenre = true;
             }
           }.bind(this))
@@ -412,13 +405,11 @@ class Home extends React.Component {
           }
         // If genres is empty
         } else {
-          console.log("not checking genre")
           this.setMatchingTimeAfterCheckingGenres(currentTime, childSnapshot);
         }
 
       }.bind(this))
-      console.log(this.mapMarkers);
-      console.log(this.mapMarkers.length)
+
       this.markerCluster = new MarkerClusterer(this.map, this.mapMarkers,
         {
           imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m'
@@ -632,7 +623,7 @@ class Home extends React.Component {
       });
 
       //Watch the user's position without centering the map each time.
-      navigator.geolocation.watchPosition(function(position) {
+      this.watchId = navigator.geolocation.watchPosition(function(position) {
         console.log("watch position");
         this.ourSetPosition(position);
         marker.setPosition({
@@ -726,6 +717,11 @@ class Home extends React.Component {
           //window.location.href = '#/';
       }
     }
+  }
+
+  componentWillUnmount() {
+    // console.log("component will unmount");
+    navigator.geolocation.clearWatch(this.watchId);
   }
 
   render() {
