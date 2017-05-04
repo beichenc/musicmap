@@ -6,6 +6,16 @@ var positionIcon = require('../images/icon_bludot.png');
 var Search = require('./Search.js')
 var TimeFilter = require('./TimeFilter.js');
 var markercluster = require('../js/markercluster.js');
+// var CookiesProvider = require('react-cookie').CookiesProvider;
+// var withCookies = require('react-cookie').withCookies;
+// var Cookies = require('react-cookie').Cookies;
+// var PropTypes = require('prop-types');
+// var instanceOf = require('prop-types').instanceOf;
+
+// import cookie from 'react-cookie';
+import Cookies from 'universal-cookie';
+
+
 // var GeolocationMarker = require('geolocation-marker');
 
 class Home extends React.Component {
@@ -429,7 +439,49 @@ class Home extends React.Component {
     }
   }
 
+  getNewAccessToken(callback, refresh_token) {
+    axios({
+      method: 'get',
+      url: '/refresh_token',
+      params: {
+        refresh_token: refresh_token
+      }
+    }).then(function(response) {
+      var access_token = response.data.access_token;
+      window.location.replace(`/#/${access_token}/${refresh_token}`);
+      this.setState({
+        oauthDetails: {
+          access_token: access_token,
+          refresh_token: refresh_token
+        }
+      }, () => callback())
+    }.bind(this))
+  }
+
+  getAllData() {
+    console.log(this.state.oauthDetails.access_token);
+    axios.all([this.getSongData(), this.getUserData(), this.getOwnData()])
+      .then(function(acct, perms) {
+        this.setState({
+          dataLoading: false
+        }, () => {
+          if (this.state.mapLoading === false) {
+            this.setState({
+              isLoading: false
+            })
+          }
+        })
+      }.bind(this))
+  }
+
   componentDidMount() {
+    // const { cookies } = this.props;
+    // cookies.set('hello', 'hello')
+    // console.log(cookies)
+    // console.log(this.props)
+    // console.log(cookie);
+
+    const cookies = new Cookies();
 
     var markerCounter = 0;
     // Read data from firebase and set to map
@@ -559,7 +611,23 @@ class Home extends React.Component {
     // Spotify
     var access_token = this.props.routeParams.access_token,
         refresh_token = this.props.routeParams.refresh_token,
-        error = this.props.routeParams.error;
+        error = this.props.routeParams.error
+
+    // Testing
+    // var access_token = sessionStorage.access_token;
+    // var refresh_token = sessionStorage.refresh_token;
+    // var error = false;
+    // console.log(access_token)
+
+    // var access_token = cookies.get('access_token');
+    // var refresh_token = cookies.get('refresh_token');
+
+    // window.location.replace('/#/home');
+
+    // cookie.save('hello', 'hello');
+    // console.log(cookie.load('hello'));
+    cookies.set('atlastune_refresh_token', refresh_token);
+    console.log(cookies.get('atlastune_refresh_token'));
 
     if (error) {
       alert('There was an error during the authentication');
@@ -567,48 +635,30 @@ class Home extends React.Component {
       if (access_token) {
         // Get a new access token every ~15 minutes, since they expire.
         setInterval(function() {
-          console.log("900000 ms passed")
-          axios({
-            method: 'get',
-            url: '/refresh_token',
-            params: {
-              refresh_token: refresh_token
-            }
-          }).then(function(response) {
-            access_token = response.data.access_token;
-            window.location.replace(`/#/${access_token}/${refresh_token}`);
-            this.setState({
-              oauthDetails: {
-                access_token: access_token,
-                refresh_token: refresh_token
-              }
-            })
-          }.bind(this))
+          console.log("900000 ms passed");
+          this.getNewAccessToken(function() {
+            console.log("new access token gotten");
+          }, refresh_token);
         }.bind(this), 900000)
         // 1800000 ms = 30 min
 
-        // Set state and get all data from Spotify API.
-        var oauthDetails = {
-          access_token: access_token,
-          refresh_token: refresh_token
+        // Redirected from Login page since they are already signed in.
+        if (access_token = 'access_token') {
+          this.getNewAccessToken(function() {
+            this.getAllData();
+          }.bind(this), refresh_token);
+        } else {
+          // Set state and get all data from Spotify API.
+          var oauthDetails = {
+            access_token: access_token,
+            refresh_token: refresh_token
+          }
+          this.setState({
+            oauthDetails: oauthDetails
+          }, () => {
+            this.getAllData();
+          })
         }
-        this.setState({
-          oauthDetails: oauthDetails
-        }, () => {
-          console.log(this.state.oauthDetails.access_token);
-          axios.all([this.getSongData(), this.getUserData(), this.getOwnData()])
-            .then(function(acct, perms) {
-              this.setState({
-                dataLoading: false
-              }, () => {
-                if (this.state.mapLoading === false) {
-                  this.setState({
-                    isLoading: false
-                  })
-                }
-              })
-            }.bind(this))
-        })
 
         // Get currently playing song every 30 sec to update
         setInterval(function() {
@@ -624,6 +674,7 @@ class Home extends React.Component {
 
   render() {
     return (
+
       <div className="wrapperWithoutBg">
         <div id="loggedin">
           <div id="user-profile">
@@ -662,8 +713,13 @@ class Home extends React.Component {
           </div>
         </div>
       </div>
+
     )
   }
 }
+
+// Home.propTypes = {
+//   cookies: instanceOf(Cookies).isRequired
+// }
 
 module.exports = Home;

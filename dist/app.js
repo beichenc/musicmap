@@ -11,6 +11,7 @@ var express = require('express'); // Express web server framework
 var request = require('request'); // "Request" library
 var querystring = require('querystring');
 var cookieParser = require('cookie-parser');
+// var csrf = require('csurf');
 
 var client_id = '3481c5ebeb68422e98110dd22f644daf'; // Your client id
 var client_secret = '5a02f4d8b20d467d96a58a39c59d1a13'; // Your secret
@@ -36,6 +37,8 @@ var generateRandomString = function(length) {
 var stateKey = 'spotify_auth_state';
 
 var app = express();
+
+// var csrfProtection = csrf({cookie: true});
 
 //app.use(express.static(__dirname + '/public'))
 app.use(express.static(__dirname))
@@ -115,6 +118,16 @@ app.get('/callback', function(req, res) {
         //   }));
         console.log("got to redirect");
         res.redirect(`/#/${access_token}/${refresh_token}`);
+
+        // window.sessionStorage.access_token = access_token;
+        // sessionStorage.refresh_token = refresh_token;
+
+        // set a new cookie
+        // res.cookie('access_token', access_token);
+        // res.cookie('refresh_token', refresh_token);
+        // Read somewhere that cookies are not sent with redirect... so this won't work.
+
+        // res.redirect('/#/home')
       } else {
         res.redirect('/#' +
           querystring.stringify({

@@ -1,7 +1,15 @@
 var React = require('react');
 var styles = require('../styles/styles.css');
+import Cookies from 'universal-cookie';
 
 class Login extends React.Component {
+  componentWillMount() {
+    const cookies = new Cookies();
+    var refresh_token = cookies.get('atlastune_refresh_token')
+    if(refresh_token) {
+      window.location.href=`/#/access_token/${refresh_token}`
+    }
+  }
 
   render() {
     return (
