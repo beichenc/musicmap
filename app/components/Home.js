@@ -6,11 +6,6 @@ var positionIcon = require('../images/icon_bludot.png');
 var Search = require('./Search.js')
 var TimeFilter = require('./TimeFilter.js');
 var markercluster = require('../js/markercluster.js');
-// var CookiesProvider = require('react-cookie').CookiesProvider;
-// var withCookies = require('react-cookie').withCookies;
-// var Cookies = require('react-cookie').Cookies;
-// var PropTypes = require('prop-types');
-// var instanceOf = require('prop-types').instanceOf;
 
 // import cookie from 'react-cookie';
 import Cookies from 'universal-cookie';
@@ -31,6 +26,7 @@ class Home extends React.Component {
     this.handleSubmit = this.handleSubmit.bind(this);
     this.setMatchingTime = this.setMatchingTime.bind(this);
     this.setMatchingGenres = this.setMatchingGenres.bind(this);
+    this.logOut = this.logOut.bind(this);
 
     console.log("constructor");
 
@@ -57,6 +53,7 @@ class Home extends React.Component {
     this.mapMarkers=[];
     this.markerCluster = {};
     this.watchId = null;
+    this.cookies=new Cookies();
   }
 
   like() {
@@ -484,6 +481,18 @@ class Home extends React.Component {
     }
   }
 
+  logOut(){
+    //AuthenticationClient.clearCookies(getApplication());
+    this.cookies.set('atlastune_refresh_token','')
+    console.log(this.cookies.get('atlastune_refresh_token'));
+    this.setState={
+    oauthDetails: {access_token: '', refresh_token: ''},
+    isLoggedIn: false
+    }
+    window.location.href="/#"
+    console.log('hello');
+  }
+
   getNewAccessToken(callback, refresh_token) {
     axios({
       method: 'get',
@@ -568,11 +577,6 @@ class Home extends React.Component {
   // End slider functions
 
   componentDidMount() {
-    // const { cookies } = this.props;
-    // cookies.set('hello', 'hello')
-    // console.log(cookies)
-    // console.log(this.props)
-    // console.log(cookie);
     console.log("component did mount");
 
     // Slider
@@ -608,8 +612,6 @@ class Home extends React.Component {
     }.bind(this))
 
     // End slider
-
-    const cookies = new Cookies();
 
     var markerCounter = 0;
     // Read data from firebase and set to map
@@ -728,26 +730,13 @@ class Home extends React.Component {
         refresh_token = this.props.routeParams.refresh_token,
         error = this.props.routeParams.error
 
-    // Testing
-    // var access_token = sessionStorage.access_token;
-    // var refresh_token = sessionStorage.refresh_token;
-    // var error = false;
-    // console.log(access_token)
-
-    // var access_token = cookies.get('access_token');
-    // var refresh_token = cookies.get('refresh_token');
-
-    // window.location.replace('/#/home');
-
-    // cookie.save('hello', 'hello');
-    // console.log(cookie.load('hello'));
-    cookies.set('atlastune_refresh_token', refresh_token);
-    console.log(cookies.get('atlastune_refresh_token'));
+    this.cookies.set('atlastune_refresh_token', refresh_token);
+    console.log(this.cookies.get('atlastune_refresh_token'));
 
     if (error) {
       alert('There was an error during the authentication');
     } else {
-      if (access_token) {
+      if (access_token != '') {
         // Get a new access token every ~15 minutes, since they expire.
         setInterval(function() {
           console.log("900000 ms passed");
@@ -785,6 +774,8 @@ class Home extends React.Component {
           //window.location.href = '#/';
       }
     }
+    console.log(this.cookies.get('atlastune_refresh_token'));
+    console.log(this.state.oauthDetails.access_token);
   }
 
   componentWillUnmount() {
@@ -826,6 +817,7 @@ class Home extends React.Component {
                 </li>
                 <li className="c-menu__item"><p>Filter by time</p></li>
                 <div><TimeFilter onSubmit={this.handleSubmit}/></div>
+                <li className="c-menu__item"><button onClick={this.logOut}>Log out</button></li>
 
               </ul>
             </nav>
@@ -838,8 +830,5 @@ class Home extends React.Component {
   }
 }
 
-// Home.propTypes = {
-//   cookies: instanceOf(Cookies).isRequired
-// }
 
 module.exports = Home;
