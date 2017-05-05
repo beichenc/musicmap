@@ -8,7 +8,7 @@ class About extends React.Component {
 
   render() {
     return (
-      <div className="wrapperWithoutBg">
+      <div className="wrapperAbout">
         <div id="about">
           <h1 className="aboutUs">About</h1>
           <p className="aboutText">Ever feel like you've run out of good songs to listen to? Look no further! We present to you the Music Map (Atlastune?). Our vision is to make music inspiration available anywhere, anytime. </p>

@@ -1,7 +1,7 @@
 html, body {
   height: 100%;
   width: 100%;
-  background-color: #212121;
+  /*background-color: #212121;*/
 }
 
 /* The blue dot marker*/
@@ -119,6 +119,19 @@ img[src^='./app/images/icon_bludot.png'] {
   /*position: fixed;*/
   color: white;
   font-family: "Open Sans";
+  position: absolute;
+}
+
+.wrapperAbout {
+  text-align: center;
+  background-color: white;
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  /*position: fixed;*/
+  color: #212121;
+  font-family: "Open Sans";
+  position: absolute;
 }
 
 .currentlyPlaying {
