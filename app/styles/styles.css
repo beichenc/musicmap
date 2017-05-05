@@ -35,13 +35,18 @@ img[src^='./app/images/icon_bludot.png'] {
   .aboutText {
     margin: 0 auto;
     margin-top: 40px;
-    width: 50%;
+    /*width: 50%;*/
+    margin-left: 40px;
+    margin-right: 40px;
     /*margin-left: 200px;
     margin-right: 200px;*/
     font-size: 18px;
     text-align: left;
   }
   #about {
+    margin-bottom: 100px;
+  }
+  .aboutBody {
     margin-bottom: 100px;
   }
 }
@@ -69,6 +74,10 @@ img[src^='./app/images/icon_bludot.png'] {
     margin: 0 auto;
     margin-top: 20px;
     text-align: left;
+  }
+  .aboutBody {
+    position: absolute;
+    padding-bottom: 50px;
   }
 }
 
@@ -113,11 +122,11 @@ img[src^='./app/images/icon_bludot.png'] {
   margin-top: 25px;
 }
 
-.header {
+/*.header {
   background-color: #5cb85c;
   padding: 1px 0px 11px 0px;
   color: white;
-}
+}*/
 
 .musicIcon {
   margin-top: 50px;
@@ -147,6 +156,13 @@ img[src^='./app/images/icon_bludot.png'] {
   color: #212121;
   font-family: "Open Sans";
   position: absolute;
+}
+
+.aboutBody {
+  background-color: #f4fff4;
+  border-radius: 24px;
+  padding: 10px;
+  padding-bottom: 50px;
 }
 
 .currentlyPlaying {

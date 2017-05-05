@@ -14,11 +14,15 @@ class About extends React.Component {
           {/* <div className="header">
             <h1 className="aboutTitle">Music Map</h1>
           </div> */}
-          <img src={musicicon} className="musicIcon"></img>
-          <p className="aboutText">Ever feel like you've run out of good songs to listen to? Look no further! We present to you the Music Map (Atlastune?). Our vision is to make music inspiration available anywhere, anytime. </p>
-          <p className="aboutText">Join the community! To share, listen, and get inspired!</p>
-          <p className="aboutText">Our upcoming features: being able to "like" songs, being able to follow users that you think have good music taste, and a news feed where you can see recently mapped songs by the people you follow!</p>
-          <p className="aboutText">Have some feedback or ideas? We'd love to hear from you! Drop us an email at bestmusicmap@gmail.com</p>
+          <div className="col-md-12">
+            <img src={musicicon} className="musicIcon"></img>
+          </div>
+          <div className="aboutBody col-md-8 col-md-offset-2">
+            <p className="aboutText">Ever feel like you've run out of good songs to listen to? Look no further! We present to you the Music Map (Atlastune?). Our vision is to make music inspiration available anywhere, anytime. </p>
+            <p className="aboutText">Join the community! To share, listen, and get inspired!</p>
+            <p className="aboutText">Our upcoming features: being able to "like" songs, being able to follow users that you think have good music taste, and a news feed where you can see recently mapped songs by the people you follow!</p>
+            <p className="aboutText">Have some feedback or ideas? We'd love to hear from you! Drop us an email at bestmusicmap@gmail.com</p>
+          </div>
         </div>
       </div>
     )
