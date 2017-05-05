@@ -48,6 +48,7 @@ img[src^='./app/images/icon_bludot.png'] {
   }
   .aboutBody {
     margin-bottom: 100px;
+    border-radius: 24px;
   }
 }
 
@@ -160,7 +161,6 @@ img[src^='./app/images/icon_bludot.png'] {
 
 .aboutBody {
   background-color: #f4fff4;
-  border-radius: 24px;
   padding: 10px;
   padding-bottom: 50px;
 }
