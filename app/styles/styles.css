@@ -33,11 +33,16 @@ img[src^='./app/images/icon_bludot.png'] {
     font-family: "Open Sans";
   }
   .aboutText {
+    margin: 0 auto;
     margin-top: 40px;
-    margin-left: 150px;
-    margin-right: 150px;
+    width: 50%;
+    /*margin-left: 200px;
+    margin-right: 200px;*/
     font-size: 18px;
     text-align: left;
+  }
+  #about {
+    margin-bottom: 100px;
   }
 }
 
@@ -60,7 +65,7 @@ img[src^='./app/images/icon_bludot.png'] {
     margin-bottom: 50px;
   }
   .aboutText {
-    width: 85%;
+    width: 80%;
     margin: 0 auto;
     margin-top: 20px;
     text-align: left;
@@ -108,7 +113,17 @@ img[src^='./app/images/icon_bludot.png'] {
   margin-top: 25px;
 }
 
+.header {
+  background-color: #5cb85c;
+  padding: 1px 0px 11px 0px;
+  color: white;
+}
 
+.musicIcon {
+  margin-top: 50px;
+  width: 200px;
+  height: 200px;
+}
 
 .wrapperWithoutBg {
   text-align: center;
