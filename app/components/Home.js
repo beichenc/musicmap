@@ -12,6 +12,9 @@ import Cookies from 'universal-cookie';
 
 
 // var GeolocationMarker = require('geolocation-marker');
+MarkerClusterer.prototype.onRemove = function () {
+  this.setReady_(true);
+};
 
 class Home extends React.Component {
 
@@ -24,6 +27,8 @@ class Home extends React.Component {
     this.setMatchingTime = this.setMatchingTime.bind(this);
     this.setMatchingGenres = this.setMatchingGenres.bind(this);
     this.logOut = this.logOut.bind(this);
+
+    console.log("constructor");
 
 
     this.state = {
@@ -46,6 +51,8 @@ class Home extends React.Component {
     };
     this.map = {};
     this.mapMarkers=[];
+    this.markerCluster = {};
+    this.watchId = null;
     this.cookies=new Cookies();
   }
 
@@ -88,7 +95,7 @@ class Home extends React.Component {
       zIndex: 1
     });
     this.mapMarkers.push(marker);
-    console.log(marker)
+    // console.log(marker)
     // this.setState({
     //   markerCounter: this.state.markerCounter + 1
     // }, () => {
@@ -98,7 +105,7 @@ class Home extends React.Component {
 
 
     var genres ="";
-    console.log(mappedSong.genres);
+    // console.log(mappedSong.genres);
     if (mappedSong.genres != undefined) {
       mappedSong.genres.map(function(genre){
         genres = genres + genre;
@@ -200,7 +207,7 @@ class Home extends React.Component {
       // Retrieving genre data
       axios.get(response.data.item.artists[0].href)
         .then(function(artistDetails) {
-        console.log(artistDetails);
+        // console.log(artistDetails);
         this.setState({
           genres: artistDetails.data.genres
         })
@@ -334,56 +341,78 @@ class Home extends React.Component {
 
   //Search bar for genres
   removeMarkers() {
-    console.log("remove markers " + this.mapMarkers.length);
     for(var i=0; i<this.mapMarkers.length; i++) {
       this.mapMarkers[i].setMap(null)
     }
     this.mapMarkers=[];
+    this.markerCluster.clearMarkers();
+    // this.markerCluster.setMap(null);
+  }
+
+  setMatchingTimeAfterCheckingGenres(currentTime, childSnapshot) {
+    // Check time filter
+    switch(this.state.timeFilter) {
+      case 'Latest Year':
+        if(currentTime.getTime() - childSnapshot.val().unixtime < 31540000000){
+          this.setMarkers(this.map, childSnapshot.val());
+        }
+        break;
+      case 'Latest Month':
+        if(currentTime.getTime() - childSnapshot.val().unixtime < 2628000000){
+          this.setMarkers(this.map, childSnapshot.val());
+        }
+        break;
+      case 'Latest Week':
+        if(currentTime.getTime() - childSnapshot.val().unixtime < 604800000){
+          this.setMarkers(this.map, childSnapshot.val());
+        }
+        break;
+      case 'Latest Day':
+        if(currentTime.getTime() - childSnapshot.val().unixtime < 86400000){
+          this.setMarkers(this.map, childSnapshot.val());
+        }
+        break;
+      case 'All':
+        this.setMarkers(this.map, childSnapshot.val());
+    }
   }
 
   setMatchingGenres(searchingGenre){
     this.setState({
       genreFilter: searchingGenre
     })
-    console.log("hello");
 
     var currentTime = new Date();
 
     firebase.database().ref('/marker').once('value').then(function(snapshot) {
       snapshot.forEach(function(childSnapshot) {
-        console.log(childSnapshot.key);
+        // console.log(childSnapshot.key);
         // Check genre filter
-        // TODO: fix empty genres
-        childSnapshot.val().genres.map(function(genre){
-          if(genre.includes(searchingGenre)){
-            // Check time filter
-            switch(this.state.timeFilter) {
-              case 'Latest Year':
-                if(currentTime.getTime() - childSnapshot.val().unixtime < 31540000000){
-                  this.setMarkers(this.map, childSnapshot.val());
-                }
-                break;
-              case 'Latest Month':
-                if(currentTime.getTime() - childSnapshot.val().unixtime < 2628000000){
-                  this.setMarkers(this.map, childSnapshot.val());
-                }
-                break;
-              case 'Latest Week':
-                if(currentTime.getTime() - childSnapshot.val().unixtime < 604800000){
-                  this.setMarkers(this.map, childSnapshot.val());
-                }
-                break;
-              case 'Latest Day':
-                if(currentTime.getTime() - childSnapshot.val().unixtime < 86400000){
-                  this.setMarkers(this.map, childSnapshot.val());
-                }
-                break;
-              case 'All':
-                this.setMarkers(this.map, childSnapshot.val());
+        // If genres is not empty
+        if (childSnapshot.val().genres != undefined) {
+          var matchesGenre = false;
+          childSnapshot.val().genres.map(function(genre){
+
+            if(genre.includes(searchingGenre)){
+              matchesGenre = true;
             }
+          }.bind(this))
+          if (matchesGenre) {
+            this.setMatchingTimeAfterCheckingGenres(currentTime, childSnapshot);
           }
-        }.bind(this))
+        // If genres is empty
+        } else {
+          this.setMatchingTimeAfterCheckingGenres(currentTime, childSnapshot);
+        }
+
       }.bind(this))
+
+      this.markerCluster = new MarkerClusterer(this.map, this.mapMarkers,
+        {
+          imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m'
+        }
+      );
+
     }.bind(this));
   }
 
@@ -391,13 +420,22 @@ class Home extends React.Component {
     snapshot.forEach(function(childSnapshot) {
       //Check time filter
       if(currentTime.getTime() - childSnapshot.val().unixtime < timeInterval){
-        // Check genre filter
-        // TODO: fix empty genres
-        childSnapshot.val().genres.map(function(genre){
-          if(genre.includes(this.state.genreFilter)){
+        // If genres is not empty
+        if (childSnapshot.val().genres != undefined) {
+          // Check genre filter
+          var matchesGenre = false;
+          childSnapshot.val().genres.map(function(genre){
+            if(genre.includes(this.state.genreFilter)){
+              matchesGenre = true;
+            }
+          }.bind(this))
+          if (matchesGenre) {
             this.setMarkers(this.map, childSnapshot.val());
           }
-        }.bind(this))
+        // If genre is empty
+        } else {
+          this.setMarkers(this.map, childSnapshot.val());
+        }
       }
     }.bind(this))
   }
@@ -425,6 +463,13 @@ class Home extends React.Component {
         case 'All':
           this.filterSnapshotAndMap(snapshot, currentTime, currentTime.getTime());
       }
+      this.markerCluster = new MarkerClusterer(this.map, this.mapMarkers,
+        {
+          imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m'
+        }
+      );
+
+
     }.bind(this));
   }
   handleSubmit(searchingValue, searchingType){
@@ -468,7 +513,7 @@ class Home extends React.Component {
   }
 
   getAllData() {
-    console.log(this.state.oauthDetails.access_token);
+    // console.log(this.state.oauthDetails.access_token);
     axios.all([this.getSongData(), this.getUserData(), this.getOwnData()])
       .then(function(acct, perms) {
         this.setState({
@@ -483,7 +528,90 @@ class Home extends React.Component {
       }.bind(this))
   }
 
+  // Slider functions
+
+  extend(a, b) {
+    for(var key in b) {
+      if(b.hasOwnProperty(key)) {
+        a[key] = b[key];
+      }
+    }
+    return a;
+  }
+
+  each(collection, callback) {
+    for (var i = 0; i < collection.length; i++) {
+      var item = collection[i];
+      callback(item);
+    }
+  }
+
+  openSlider(body, wrapper, menu, mask, menuOpeners) {
+    body.classList.add('has-active-menu');
+    wrapper.classList.add('has-' + 'slide-left');
+    menu.classList.add('is-active');
+    mask.classList.add('is-active');
+    this.disableMenuOpeners(menuOpeners);
+  }
+
+  closeSlider(body, wrapper, menu, mask, menuOpeners) {
+    body.classList.remove('has-active-menu');
+    wrapper.classList.remove('has-' + 'slide-left');
+    menu.classList.remove('is-active');
+    mask.classList.remove('is-active');
+    this.enableMenuOpeners(menuOpeners);
+  }
+
+  disableMenuOpeners(menuOpeners) {
+    this.each(menuOpeners, function(item) {
+      item.disabled = true;
+    });
+  }
+
+  enableMenuOpeners(menuOpeners) {
+    this.each(menuOpeners, function(item) {
+      item.disabled = false;
+    });
+  }
+
+  // End slider functions
+
   componentDidMount() {
+    console.log("component did mount");
+
+    // Slider
+    var body = document.body;
+    var wrapper = document.querySelector('#o-wrapper');
+    var mask = document.querySelector('#c-mask');
+    var menu = document.querySelector('#c-menu--' + 'slide-left');
+    var closeBtn = menu.querySelector('.c-menu__close');
+    var menuOpeners = document.querySelectorAll('.c-button');
+
+    closeBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      this.closeSlider(body, wrapper, menu, mask, menuOpeners);
+    }.bind(this));
+
+    // Event for clicks on the mask.
+    mask.addEventListener('click', function(e) {
+      e.preventDefault();
+      this.closeSlider(body, wrapper, menu, mask, menuOpeners);
+    }.bind(this));
+
+    var slideLeftBtn = document.querySelector('#c-button--slide-left');
+
+    slideLeftBtn.addEventListener('click', function(e) {
+      e.preventDefault;
+      this.openSlider(body, wrapper, menu, mask, menuOpeners);
+    }.bind(this));
+
+    var aboutButton = document.querySelector('.aboutButton');
+    aboutButton.addEventListener('click', function(e) {
+      e.preventDefault;
+      this.closeSlider(body, wrapper, menu, mask, menuOpeners);
+    }.bind(this))
+
+    // End slider
 
     var markerCounter = 0;
     // Read data from firebase and set to map
@@ -493,15 +621,14 @@ class Home extends React.Component {
           markerCounter += 1;
       }.bind(this))
 
-      var markerCluster = new MarkerClusterer(this.map, this.mapMarkers,
+      this.markerCluster = new MarkerClusterer(this.map, this.mapMarkers,
         {
           imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m'
         }
       );
     }.bind(this));
 
-    //var infoWindow = {};
-
+    // Creating a map
     this.map = new google.maps.Map(document.getElementById('map'), {
       zoom: 15,
       center: {lat: -34.397, lng: 150.644},
@@ -509,13 +636,7 @@ class Home extends React.Component {
       draggable: true
     });
 
-
-    //
-    // $(window).resize(function() {
-    //   google.maps.event.trigger(map, "resize");
-    // })
-
-
+    // Geolocation
     if (navigator.geolocation) {
       console.log("nagivator location");
 
@@ -524,6 +645,7 @@ class Home extends React.Component {
       // On page load, get current position and center the map on that position.
       navigator.geolocation.getCurrentPosition(function(position) {
 
+        console.log("got current position once");
         // Not loading anymore
         this.setState({
           mapLoading: false
@@ -556,14 +678,7 @@ class Home extends React.Component {
           zIndex: markerCounter + 1,
           optimized: false
         });
-        // var GeoMarker = new GeolocationMarker(this.map);
 
-
-        // var infoWindow = new google.maps.InfoWindow({
-        //   content: "<p style='color: black;'> Location found. </p>"
-        // })
-        // infoWindow.setPosition(pos);
-        // infoWindow.open(this.map);
         this.map.setCenter(pos)
 
 
@@ -578,7 +693,7 @@ class Home extends React.Component {
       });
 
       //Watch the user's position without centering the map each time.
-      navigator.geolocation.watchPosition(function(position) {
+      this.watchId = navigator.geolocation.watchPosition(function(position) {
         console.log("watch position");
         this.ourSetPosition(position);
         marker.setPosition({
@@ -608,7 +723,7 @@ class Home extends React.Component {
       })
     }
 
-    var menu = require('../js/menu.js');
+    // var menu = require('../js/menu.js');
 
     // Spotify
     var access_token = this.props.routeParams.access_token,
@@ -663,6 +778,10 @@ class Home extends React.Component {
     console.log(this.state.oauthDetails.access_token);
   }
 
+  componentWillUnmount() {
+    // console.log("component will unmount");
+    navigator.geolocation.clearWatch(this.watchId);
+  }
 
   render() {
     return (
@@ -691,7 +810,7 @@ class Home extends React.Component {
             <nav id="c-menu--slide-left" className="c-menu c-menu--slide-left">
               <button className="c-menu__close">&larr; Close Menu</button>
               <ul className="c-menu__items">
-                <li className="c-menu__item"><a href="#" className="c-menu__link">About</a></li>
+                <li className="c-menu__item"><a href="/#/about" className="c-menu__link aboutButton">About</a></li>
 
                 <li className="c-menu__item"><p>Filter by genre</p>
                   <div><Search onSubmit={this.handleSubmit} placeholder="Search genre..."/></div>

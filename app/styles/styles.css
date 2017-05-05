@@ -32,6 +32,13 @@ img[src^='./app/images/icon_bludot.png'] {
     color: white;
     font-family: "Open Sans";
   }
+  .aboutText {
+    margin-top: 40px;
+    margin-left: 150px;
+    margin-right: 150px;
+    font-size: 18px;
+    text-align: left;
+  }
 }
 
 /* Mobiles and iPads */
@@ -48,6 +55,15 @@ img[src^='./app/images/icon_bludot.png'] {
     position: fixed;
     color: white;
     font-family: "Open Sans";
+  }
+  #about {
+    margin-bottom: 50px;
+  }
+  .aboutText {
+    width: 85%;
+    margin: 0 auto;
+    margin-top: 20px;
+    text-align: left;
   }
 }
 
@@ -157,6 +173,8 @@ img[src^='./app/images/icon_bludot.png'] {
   margin-top: 20px;
   cursor: pointer;
 }
+
+
 
 .loadingGif {
   position: fixed;

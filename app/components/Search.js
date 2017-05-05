@@ -8,7 +8,7 @@ class Search extends React.Component {
     }
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
-    this.handleKeyUp = this.handleKeyUp.bind(this);
+    // this.handleKeyUp = this.handleKeyUp.bind(this);
   }
   handleChange(event){
     this.setState({
@@ -19,16 +19,17 @@ class Search extends React.Component {
     event.preventDefault();
     this.props.onSubmit(this.state.searchingGenre, 'Genre');
   }
-  handleKeyUp(event){
-    event.preventDefault();
-    if(event.keyCode==13){
-      this.props.onSubmit(this.state.searchingGenre, 'Genre');
-    }
-  }
+  // handleKeyUp(event){
+  //   event.preventDefault();
+  //   if(event.keyCode==13){
+  //     console.log("pressed enter");
+  //     this.props.onSubmit(this.state.searchingGenre, 'Genre');
+  //   }
+  // }
   render(){
     return (
       <form onSubmit={this.handleSubmit}>
-      <input type='text' className="form-control" placeholder="Search Genre..." value={this.state.searchingGenre} onChange={this.handleChange} onKeyUp={this.handleKeyUp}/>
+      <input type='text' className="form-control" placeholder="Search Genre..." value={this.state.searchingGenre} onChange={this.handleChange}/>
       <button type='submit'>Search</button>
       </form>
     )
