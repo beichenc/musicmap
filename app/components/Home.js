@@ -47,10 +47,12 @@ class Home extends React.Component {
       mapError: false,
       timeFilter: 'All',
       genreFilter: '',
+      markerCounter: 0,
       errorMsg: 'Oops...error with loading data'
     };
     this.map = {};
     this.mapMarkers=[];
+    this.infowindows=[]
     this.markerCluster = {};
     this.watchId = null;
     this.cookies=new Cookies();
@@ -61,7 +63,7 @@ class Home extends React.Component {
   }
 
   // Puts a marker on the map for the specific song.
-  setMarkers(map, mappedSong) {
+  setMarkers(map, mappedSong, id) {
     // Adds markers to the map.
 
     // Marker sizes are expressed as a Size of X,Y where the origin of the image
@@ -92,17 +94,10 @@ class Home extends React.Component {
       // shape: shape,
       title: mappedSong.songname,
       optimized: false,
-      zIndex: 1
+      zIndex: 1,
+      // start at 0
+      id: this.state.markerCounter
     });
-    this.mapMarkers.push(marker);
-    // console.log(marker)
-    // this.setState({
-    //   markerCounter: this.state.markerCounter + 1
-    // }, () => {
-    //   console.log(this.state.markerCounter);
-    // })
-
-
 
     var genres ="";
     // console.log(mappedSong.genres);
@@ -117,7 +112,8 @@ class Home extends React.Component {
     var contentString = "<div class='infoWindow'><div class='songName'>"+mappedSong.songname+"</div><div><ul><li>Artist: "+mappedSong.artist+"</li><li>Genre: "+ genres +"</li><li>Mapped by: "+mappedSong.username+"</li><li>Date: "+mappedSong.year+"."+mappedSong.month+"."+mappedSong.day+"</li></ul></div><a href='"+mappedSong.uri+"'><button class='btn btn-success listenButton'>Listen</button></a><p class='like'>Like</p></div>";
 
     var infowindow = new google.maps.InfoWindow({
-      content: contentString
+      content: contentString,
+      id: this.state.markerCounter
     });
     marker.addListener('click', function() {
       infowindow.open(map, marker);
@@ -125,6 +121,17 @@ class Home extends React.Component {
         console.log("like");
       })
     })
+
+    // increment
+    this.setState({
+      markerCounter: this.state.markerCounter + 1
+    }, () => {
+      // console.log(this.state.markerCounter);
+    })
+
+    this.mapMarkers.push(marker);
+    this.infowindows.push(infowindow);
+
 
     // google.maps.event.addListener(infowindow, 'domready', function() {
     //   // Reference to the DIV that wraps the bottom of infowindow
@@ -339,6 +346,37 @@ class Home extends React.Component {
 
   }
 
+  setClusters() {
+    this.markerCluster = new MarkerClusterer(this.map, this.mapMarkers,
+      {
+        imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m'
+      }
+    );
+    console.log(this.markerCluster);
+    google.maps.event.addListener(this.markerCluster, 'clusterclick', function(cluster) {
+      // cluster.getCenter();
+      // cluster.getSize();
+      if (this.map.getZoom() >= 21) {
+        var markers = cluster.getMarkers();
+        console.log(markers);
+        var contentString = "";
+        markers.map(function(marker) {
+          console.log(marker.id);
+          var infowindowOfMarker = this.infowindows[marker.id];
+          var contentStringOfMarker = infowindowOfMarker.content;
+          // contentString += "<p>";
+          // contentString += marker.title;
+          // contentString += "</p>";
+          contentString += contentStringOfMarker;
+        }.bind(this))
+        var infowindow = new google.maps.InfoWindow({
+          content: contentString
+        });
+        infowindow.open(this.map, markers[0]);
+      }
+    }.bind(this));
+  }
+
   //Search bar for genres
   removeMarkers() {
     for(var i=0; i<this.mapMarkers.length; i++) {
@@ -407,11 +445,7 @@ class Home extends React.Component {
 
       }.bind(this))
 
-      this.markerCluster = new MarkerClusterer(this.map, this.mapMarkers,
-        {
-          imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m'
-        }
-      );
+      this.setClusters();
 
     }.bind(this));
   }
@@ -463,12 +497,7 @@ class Home extends React.Component {
         case 'All':
           this.filterSnapshotAndMap(snapshot, currentTime, currentTime.getTime());
       }
-      this.markerCluster = new MarkerClusterer(this.map, this.mapMarkers,
-        {
-          imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m'
-        }
-      );
-
+      this.setClusters();
 
     }.bind(this));
   }
@@ -621,11 +650,7 @@ class Home extends React.Component {
           markerCounter += 1;
       }.bind(this))
 
-      this.markerCluster = new MarkerClusterer(this.map, this.mapMarkers,
-        {
-          imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m'
-        }
-      );
+      this.setClusters();
     }.bind(this));
 
     // Creating a map
