@@ -5,6 +5,13 @@ var axios = require('axios');
 var positionIcon = require('../images/icon_bludot.png');
 var Search = require('./Search.js')
 var TimeFilter = require('./TimeFilter.js');
+var markercluster = require('../js/markercluster.js');
+
+// import cookie from 'react-cookie';
+import Cookies from 'universal-cookie';
+
+
+// var GeolocationMarker = require('geolocation-marker');
 
 class Home extends React.Component {
 
@@ -16,6 +23,7 @@ class Home extends React.Component {
     this.handleSubmit = this.handleSubmit.bind(this);
     this.setMatchingTime = this.setMatchingTime.bind(this);
     this.setMatchingGenres = this.setMatchingGenres.bind(this);
+    this.logOut = this.logOut.bind(this);
 
 
     this.state = {
@@ -33,10 +41,12 @@ class Home extends React.Component {
       error: false,
       mapError: false,
       timeFilter: 'All',
-      genreFilter: ''
+      genreFilter: '',
+      errorMsg: 'Oops...error with loading data'
     };
     this.map = {};
     this.mapMarkers=[];
+    this.cookies=new Cookies();
   }
 
   like() {
@@ -69,7 +79,7 @@ class Home extends React.Component {
     //   type: 'poly'
     // };
     var marker = new google.maps.Marker({
-      position: {lat: mappedSong.lat ,lng: mappedSong.lng},
+      position: {lat: mappedSong.lat, lng: mappedSong.lng},
       map: map,
       icon: image,
       // shape: shape,
@@ -96,9 +106,8 @@ class Home extends React.Component {
       })
       genres = genres.substring(0, genres.length-2)
     }
-    
-    var contentString = "<div class='infoWindow'><div class='songName'>"+mappedSong.songname+"</div><div><ul><li>Artist: "+mappedSong.artist+"</li><li>Genre: "+ genres +"</li><li>Mapped by: "+mappedSong.username+"</li><li>Date: "+mappedSong.year+"."+mappedSong.month+"."+mappedSong.day+"</li></ul></div><a href='"+mappedSong.uri+"'><button class='btn btn-success listenButton'>Listen</button></a><p class='like'>Like</p></div>";
 
+    var contentString = "<div class='infoWindow'><div class='songName'>"+mappedSong.songname+"</div><div><ul><li>Artist: "+mappedSong.artist+"</li><li>Genre: "+ genres +"</li><li>Mapped by: "+mappedSong.username+"</li><li>Date: "+mappedSong.year+"."+mappedSong.month+"."+mappedSong.day+"</li></ul></div><a href='"+mappedSong.uri+"'><button class='btn btn-success listenButton'>Listen</button></a><p class='like'>Like</p></div>";
 
     var infowindow = new google.maps.InfoWindow({
       content: contentString
@@ -169,12 +178,24 @@ class Home extends React.Component {
         'Authorization': 'Bearer ' + this.state.oauthDetails.access_token
       }
     }).then(function(response) {
+      console.log("currently playing")
       console.log(response);
+      // If there is no currently playing data - happens when user logs in the first time ever
+      if (response.data == "") {
+        this.setState({
+          errorMsg: "It looks like you're not listening to anything..."
+        })
+      } else if (response.status = 401) {
+        this.setState({
+          errorMsg: "Oops...error with loading data kbaflkalkjfkl"
+        })
+      }
       this.setState({
         songname: response.data.item.name,
         songimg: response.data.item.album.images[2].url,
         artist: response.data.item.artists[0].name,
-        uri: response.data.item.uri
+        uri: response.data.item.uri,
+        error: false
       })
       // Retrieving genre data
       axios.get(response.data.item.artists[0].href)
@@ -185,6 +206,7 @@ class Home extends React.Component {
         })
       }.bind(this))
       .catch(function(error) {
+        console.log("error 1")
         this.setState({
           isLoading: false,
           error: true
@@ -192,6 +214,8 @@ class Home extends React.Component {
       }.bind(this));
     }.bind(this))
     .catch(function(error) {
+      console.log("error 2");
+      console.log(error);
       this.setState({
         isLoading: false,
         error: true
@@ -217,7 +241,7 @@ class Home extends React.Component {
         isLoading: false,
         error: true
       })
-    })
+    }.bind(this))
   }
 
   getOwnData() {
@@ -309,8 +333,9 @@ class Home extends React.Component {
   }
 
   //Search bar for genres
-  removeMarkers(){
-    for(var i=0; i<this.mapMarkers.length; i++){
+  removeMarkers() {
+    console.log("remove markers " + this.mapMarkers.length);
+    for(var i=0; i<this.mapMarkers.length; i++) {
       this.mapMarkers[i].setMap(null)
     }
     this.mapMarkers=[];
@@ -328,6 +353,7 @@ class Home extends React.Component {
       snapshot.forEach(function(childSnapshot) {
         console.log(childSnapshot.key);
         // Check genre filter
+        // TODO: fix empty genres
         childSnapshot.val().genres.map(function(genre){
           if(genre.includes(searchingGenre)){
             // Check time filter
@@ -366,6 +392,7 @@ class Home extends React.Component {
       //Check time filter
       if(currentTime.getTime() - childSnapshot.val().unixtime < timeInterval){
         // Check genre filter
+        // TODO: fix empty genres
         childSnapshot.val().genres.map(function(genre){
           if(genre.includes(this.state.genreFilter)){
             this.setMarkers(this.map, childSnapshot.val());
@@ -409,7 +436,55 @@ class Home extends React.Component {
     }
   }
 
+  logOut(){
+    //AuthenticationClient.clearCookies(getApplication());
+    this.cookies.set('atlastune_refresh_token','')
+    console.log(this.cookies.get('atlastune_refresh_token'));
+    this.setState={
+    oauthDetails: {access_token: '', refresh_token: ''},
+    isLoggedIn: false
+    }
+    window.location.href="/#"
+    console.log('hello');
+  }
+
+  getNewAccessToken(callback, refresh_token) {
+    axios({
+      method: 'get',
+      url: '/refresh_token',
+      params: {
+        refresh_token: refresh_token
+      }
+    }).then(function(response) {
+      var access_token = response.data.access_token;
+      window.location.replace(`/#/${access_token}/${refresh_token}`);
+      this.setState({
+        oauthDetails: {
+          access_token: access_token,
+          refresh_token: refresh_token
+        }
+      }, () => callback())
+    }.bind(this))
+  }
+
+  getAllData() {
+    console.log(this.state.oauthDetails.access_token);
+    axios.all([this.getSongData(), this.getUserData(), this.getOwnData()])
+      .then(function(acct, perms) {
+        this.setState({
+          dataLoading: false
+        }, () => {
+          if (this.state.mapLoading === false) {
+            this.setState({
+              isLoading: false
+            })
+          }
+        })
+      }.bind(this))
+  }
+
   componentDidMount() {
+
     var markerCounter = 0;
     // Read data from firebase and set to map
     firebase.database().ref('/marker').once('value').then(function(snapshot) {
@@ -417,6 +492,12 @@ class Home extends React.Component {
           this.setMarkers(this.map, childSnapshot.val())
           markerCounter += 1;
       }.bind(this))
+
+      var markerCluster = new MarkerClusterer(this.map, this.mapMarkers,
+        {
+          imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m'
+        }
+      );
     }.bind(this));
 
     //var infoWindow = {};
@@ -427,6 +508,7 @@ class Home extends React.Component {
       scrollwheel: false,
       draggable: true
     });
+
 
     //
     // $(window).resize(function() {
@@ -466,7 +548,7 @@ class Home extends React.Component {
           // The anchor for this image is the base of the flagpole at (0, 32).
           anchor: new google.maps.Point(39, 39)
         };
-        console.log(markerCounter);
+        // console.log(markerCounter);
         marker = new google.maps.Marker({
           position: pos,
           map: this.map,
@@ -474,6 +556,7 @@ class Home extends React.Component {
           zIndex: markerCounter + 1,
           optimized: false
         });
+        // var GeoMarker = new GeolocationMarker(this.map);
 
 
         // var infoWindow = new google.maps.InfoWindow({
@@ -530,56 +613,41 @@ class Home extends React.Component {
     // Spotify
     var access_token = this.props.routeParams.access_token,
         refresh_token = this.props.routeParams.refresh_token,
-        error = this.props.routeParams.error;
+        error = this.props.routeParams.error
+
+    this.cookies.set('atlastune_refresh_token', refresh_token);
+    console.log(this.cookies.get('atlastune_refresh_token'));
 
     if (error) {
       alert('There was an error during the authentication');
     } else {
-      if (access_token) {
+      if (access_token != '') {
         // Get a new access token every ~15 minutes, since they expire.
         setInterval(function() {
-          console.log("900000 ms passed")
-          axios({
-            method: 'get',
-            url: '/refresh_token',
-            params: {
-              refresh_token: refresh_token
-            }
-          }).then(function(response) {
-            access_token = response.data.access_token;
-            window.location.replace(`/#/${access_token}/${refresh_token}`);
-            this.setState({
-              oauthDetails: {
-                access_token: access_token,
-                refresh_token: refresh_token
-              }
-            })
-          }.bind(this))
+          console.log("900000 ms passed");
+          this.getNewAccessToken(function() {
+            console.log("new access token gotten");
+          }, refresh_token);
         }.bind(this), 900000)
         // 1800000 ms = 30 min
 
-        // Set state and get all data from Spotify API.
-        var oauthDetails = {
-          access_token: access_token,
-          refresh_token: refresh_token
+        // Redirected from Login page since they are already signed in.
+        if (access_token = 'access_token') {
+          this.getNewAccessToken(function() {
+            this.getAllData();
+          }.bind(this), refresh_token);
+        } else {
+          // Set state and get all data from Spotify API.
+          var oauthDetails = {
+            access_token: access_token,
+            refresh_token: refresh_token
+          }
+          this.setState({
+            oauthDetails: oauthDetails
+          }, () => {
+            this.getAllData();
+          })
         }
-        this.setState({
-          oauthDetails: oauthDetails
-        }, () => {
-          console.log(this.state.oauthDetails.access_token);
-          axios.all([this.getSongData(), this.getUserData(), this.getOwnData()])
-            .then(function(acct, perms) {
-              this.setState({
-                dataLoading: false
-              }, () => {
-                if (this.state.mapLoading === false) {
-                  this.setState({
-                    isLoading: false
-                  })
-                }
-              })
-            }.bind(this))
-        })
 
         // Get currently playing song every 30 sec to update
         setInterval(function() {
@@ -591,17 +659,21 @@ class Home extends React.Component {
           //window.location.href = '#/';
       }
     }
+    console.log(this.cookies.get('atlastune_refresh_token'));
+    console.log(this.state.oauthDetails.access_token);
   }
+
 
   render() {
     return (
+
       <div className="wrapperWithoutBg">
         <div id="loggedin">
           <div id="user-profile">
             {this.state.isLoading ?
             <div className="loadingGif"></div> :
             <h1 className="currentlyPlaying">Currently playing: {this.state.songname}</h1>}
-            {this.state.error && <p>Oops...error with loading data</p>}
+            {this.state.error && <p>{this.state.errorMsg}</p>}
             {this.state.mapError && <p>Oops...error with geolocation</p>}
 
             <div id="o-wrapper" className="o-wrapper">
@@ -626,6 +698,7 @@ class Home extends React.Component {
                 </li>
                 <li className="c-menu__item"><p>Filter by time</p></li>
                 <div><TimeFilter onSubmit={this.handleSubmit}/></div>
+                <li className="c-menu__item"><button onClick={this.logOut}>Log out</button></li>
 
               </ul>
             </nav>
@@ -633,8 +706,10 @@ class Home extends React.Component {
           </div>
         </div>
       </div>
+
     )
   }
 }
+
 
 module.exports = Home;
