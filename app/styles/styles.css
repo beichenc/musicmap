@@ -1,7 +1,7 @@
 html, body {
   height: 100%;
   width: 100%;
-  background-color: #212121;
+  /*background-color: #212121;*/
 }
 
 /* The blue dot marker*/
@@ -33,11 +33,22 @@ img[src^='./app/images/icon_bludot.png'] {
     font-family: "Open Sans";
   }
   .aboutText {
+    margin: 0 auto;
     margin-top: 40px;
-    margin-left: 150px;
-    margin-right: 150px;
+    /*width: 50%;*/
+    margin-left: 40px;
+    margin-right: 40px;
+    /*margin-left: 200px;
+    margin-right: 200px;*/
     font-size: 18px;
     text-align: left;
+  }
+  #about {
+    margin-bottom: 100px;
+  }
+  .aboutBody {
+    margin-bottom: 100px;
+    border-radius: 24px;
   }
 }
 
@@ -60,10 +71,14 @@ img[src^='./app/images/icon_bludot.png'] {
     margin-bottom: 50px;
   }
   .aboutText {
-    width: 85%;
+    width: 80%;
     margin: 0 auto;
     margin-top: 20px;
     text-align: left;
+  }
+  .aboutBody {
+    position: absolute;
+    padding-bottom: 50px;
   }
 }
 
@@ -108,7 +123,17 @@ img[src^='./app/images/icon_bludot.png'] {
   margin-top: 25px;
 }
 
+/*.header {
+  background-color: #5cb85c;
+  padding: 1px 0px 11px 0px;
+  color: white;
+}*/
 
+.musicIcon {
+  margin-top: 50px;
+  width: 200px;
+  height: 200px;
+}
 
 .wrapperWithoutBg {
   text-align: center;
@@ -119,6 +144,25 @@ img[src^='./app/images/icon_bludot.png'] {
   /*position: fixed;*/
   color: white;
   font-family: "Open Sans";
+  position: absolute;
+}
+
+.wrapperAbout {
+  text-align: center;
+  background-color: white;
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  /*position: fixed;*/
+  color: #212121;
+  font-family: "Open Sans";
+  position: absolute;
+}
+
+.aboutBody {
+  background-color: #f4fff4;
+  padding: 10px;
+  padding-bottom: 50px;
 }
 
 .currentlyPlaying {

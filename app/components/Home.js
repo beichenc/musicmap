@@ -555,6 +555,7 @@ class Home extends React.Component {
       }
     }).then(function(response) {
       var access_token = response.data.access_token;
+      console.log(response.data);
       window.location.replace(`/#/${access_token}/${refresh_token}`);
       this.setState({
         oauthDetails: {

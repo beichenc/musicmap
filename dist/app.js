@@ -98,6 +98,7 @@ app.get('/callback', function(req, res) {
 
         var access_token = body.access_token,
             refresh_token = body.refresh_token;
+        console.log(body.expires_in);
 
         var options = {
           url: 'https://api.spotify.com/v1/me',
