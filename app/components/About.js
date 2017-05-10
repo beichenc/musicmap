@@ -22,6 +22,7 @@ class About extends React.Component {
             <p className="aboutText">Join the community! To share, listen, and get inspired!</p>
             <p className="aboutText">Our upcoming features: being able to "like" songs, being able to follow users that you think have good music taste, and a news feed where you can see recently mapped songs by the people you follow!</p>
             <p className="aboutText">Have some feedback or ideas? We'd love to hear from you! Drop us an email at bestmusicmap@gmail.com</p>
+            <p className="aboutText">&copy; Amy Chen, Beichen Chen 2017</p>
           </div>
         </div>
       </div>
