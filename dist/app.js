@@ -159,8 +159,10 @@ app.get('/refresh_token', function(req, res) {
     console.log("posted refresh token")
     if (!error && response.statusCode === 200) {
       var access_token = body.access_token;
+      var expires_in = body.expires_in;
       res.send({
-        'access_token': access_token
+        'access_token': access_token,
+        'expires_in': expires_in
       });
       // Added myself
       // res.redirect(`/#/${access_token}/${refresh_token}`);

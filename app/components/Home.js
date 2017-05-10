@@ -164,12 +164,109 @@ class Home extends React.Component {
       year: currentdate.getFullYear(),
       month:currentdate.getMonth()+1,
       day:currentdate.getDate(),
-      unixtime: currentdate.getTime(),
+      timestamp: currentdate.getTime(),
+      // unixtime: currentdate.getTime(),
       lat: this.state.pos.lat,
       lng: this.state.pos.lng,
       uri: this.state.uri
     }
-    firebase.database().ref('marker/').push(mappedSong);
+    //firebase.database().ref('marker/').push(mappedSong);
+
+    //Formatting the genres parameter to match Rails+Postgres array standard.
+    var genresArrayString = "{";
+    this.state.genres.map(function(genre) {
+      genresArrayString += genre;
+      genresArrayString += ",";
+    })
+    genresArrayString = genresArrayString.substring(0, genresArrayString.length-1);
+    genresArrayString += "}";
+
+    var mappedSongForPost = {
+      username: this.state.username,
+      songname: this.state.songname,
+      artist: this.state.artist,
+      genres: genresArrayString,
+      songimg: this.state.songimg,
+      year: currentdate.getFullYear(),
+      month:currentdate.getMonth()+1,
+      // day:currentdate.getTime(),
+      day:currentdate.getDate(),
+      unixtime: currentdate.getTime(),
+      // unixtime: currentdate.getTime(),
+      lat: this.state.pos.lat,
+      lng: this.state.pos.lng,
+      uri: this.state.uri
+    }
+
+    axios.post('https://bestmusicmapapi.herokuapp.com/mapped_songs', mappedSongForPost)
+    .then(function (response) {
+      console.log(response);
+    })
+    .catch(function (error) {
+      console.log(error);
+    });
+
+    // var mappedSong = {
+    //   username: 'hello',
+    //   songname: 'hello',
+    //   artist: 'Ed Sheeran',
+    //   //genres: this.state.genres,
+    //   songimg: 'img',
+    //   year: currentdate.getFullYear(),
+    //   month:currentdate.getMonth()+1,
+    //   day:currentdate.getDate(),
+    //   //timestamp: currentdate.getTime(),
+    //   // unixtime: currentdate.getTime(),
+    //   lat: this.state.pos.lat,
+    //   lng: this.state.pos.lng,
+    //   uri: 'uri'
+    // }
+
+    // $.ajax({
+    //   url: 'https://bestmusicmapapi.herokuapp.com/mapped_songs',
+    //   type: 'POST',
+    //   data: mappedSong,
+    //   contentType: 'application/json; charset=utf-8',
+    //   success: function(response) {
+    //     console.log(response);
+    //   },
+    //   error: function(response) {
+    //     console.log(response);
+    //   }
+    // })
+
+    // $.ajax({
+    //   url: 'https://bestmusicmapapi.herokuapp.com/mapped_songs',
+    //   type: 'GET',
+    //   success: function(response) {
+    //     console.log(response);
+    //   },
+    //   error: function(response) {
+    //     console.log(response);
+    //   }
+    // })
+
+    // $.ajax({
+    //   url: 'http://localhost:3000/mapped_songs',
+    //   type: 'GET',
+    //   success: function(response) {
+    //     console.log(response);
+    //   },
+    //   error: function(response) {
+    //     console.log(response);
+    //   }
+    // })
+
+    // $.ajax({
+    //   url: 'https://pacific-reaches-20267.herokuapp.com/api/todos',
+    //   type: 'GET',
+    //   success: function(response) {
+    //     console.log(response);
+    //   },
+    //   error: function(response) {
+    //     console.log(response);
+    //   }
+    // })
 
     this.setMarkers(this.map, mappedSong);
 
@@ -185,6 +282,7 @@ class Home extends React.Component {
 
   getSongData() {
     // Retrieving currently playing song
+    console.log("access token when getting song every 30 sec: " + this.state.oauthDetails.access_token);
     axios({
       method: 'get',
       url: 'https://api.spotify.com/v1/me/player/currently-playing',
@@ -214,7 +312,8 @@ class Home extends React.Component {
       // Retrieving genre data
       axios.get(response.data.item.artists[0].href)
         .then(function(artistDetails) {
-        // console.log(artistDetails);
+        console.log(typeof(artistDetails.data.genres));
+        console.log(artistDetails.data.genres);
         this.setState({
           genres: artistDetails.data.genres
         })
@@ -272,6 +371,20 @@ class Home extends React.Component {
         })
       })
 
+    axios.get('https://bestmusicmapapi.herokuapp.com/mapped_songs')
+      .then(function(response) {
+        console.log("response from own API");
+        console.log(response);
+        console.log(response.data[12].genres[0]);
+      })
+      .catch(function(error) {
+        console.log(error);
+        this.setState({
+          isLoading: false,
+          error: true
+        })
+      }.bind(this))
+
     // axios.get('https://178.62.2.218/api/todos')
     //   .then(function(response) {
     //     console.log("From Digital Ocean: ");
@@ -327,16 +440,6 @@ class Home extends React.Component {
     controlUI.style.textAlign = 'center';
     controlUI.title = 'Click to recenter the map';
     controlDiv.appendChild(controlUI);
-
-    // var controlText = document.createElement('div');
-    // controlText.style.color = 'rgb(25,25,25)';
-    // controlText.style.fontFamily = 'Roboto,Arial,sans-serif';
-    // controlText.style.fontSize = '16px';
-    // controlText.style.lineHeight = '38px';
-    // controlText.style.paddingLeft = '5px';
-    // controlText.style.paddingRight = '5px';
-    // // controlText.innerHTML = 'Center Map';
-    // controlUI.appendChild(controlText);
 
     // Setup the click event listeners: simply set the map to Chicago.
     controlUI.addEventListener('click', function() {
@@ -708,8 +811,9 @@ class Home extends React.Component {
         this.map.setCenter(pos)
 
 
-      }.bind(this), function() {
+      }.bind(this), function(error) {
         //this.handleLocationError(true, infoWindow, this.map.getCenter());
+        console.log(error);
         this.setState({
           isLoading: false,
           mapError: true
@@ -763,12 +867,18 @@ class Home extends React.Component {
       alert('There was an error during the authentication');
     } else {
       if (access_token != '') {
+
+        var tokenLastTime = new Date().getTime();
         // Get a new access token every ~15 minutes, since they expire.
         setInterval(function() {
           console.log("900000 ms passed");
+          var currentTime = new Date().getTime();
+          var minutesSinceLast = ((currentTime - tokenLastTime) / 1000)/60
+          console.log("New access key, minutes since last: " + minutesSinceLast);
           this.getNewAccessToken(function() {
-            console.log("new access token gotten");
-          }, refresh_token);
+            console.log("new access token gotten: " + this.state.oauthDetails.access_token);
+          }.bind(this), refresh_token);
+          tokenLastTime = currentTime;
         }.bind(this), 900000)
         // 1800000 ms = 30 min
 
@@ -777,6 +887,7 @@ class Home extends React.Component {
           this.getNewAccessToken(function() {
             this.getAllData();
           }.bind(this), refresh_token);
+        // Signing in first time - not redirected.
         } else {
           // Set state and get all data from Spotify API.
           var oauthDetails = {
@@ -790,9 +901,14 @@ class Home extends React.Component {
           })
         }
 
+        var songLastTime = new Date().getTime();
         // Get currently playing song every 30 sec to update
         setInterval(function() {
           this.getSongData();
+          var currentTime = new Date().getTime();
+          var minutesSinceLast = ((currentTime - songLastTime) / 1000)/60
+          console.log("Refreshed current song, minutes since last: " + minutesSinceLast);
+          songLastTime = currentTime;
         }.bind(this), 30000)
 
       } else {
