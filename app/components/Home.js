@@ -48,7 +48,8 @@ class Home extends React.Component {
       timeFilter: 'All',
       genreFilter: '',
       markerCounter: 0,
-      errorMsg: 'Oops...error with loading data'
+      errorMsg: 'Oops...error with loading data',
+      allowToMap: true
     };
     this.map = {};
     this.mapMarkers=[];
@@ -153,123 +154,74 @@ class Home extends React.Component {
 
   // Sends the song data to Firebase and calls setMarkers().
   mapSong() {
-    var currentdate = new Date();
-    //console.log(currentdate.getTime());
-    var mappedSong = {
-      username: this.state.username,
-      songname: this.state.songname,
-      artist: this.state.artist,
-      genres: this.state.genres,
-      songimg: this.state.songimg,
-      year: currentdate.getFullYear(),
-      month:currentdate.getMonth()+1,
-      day:currentdate.getDate(),
-      timestamp: currentdate.getTime(),
-      // unixtime: currentdate.getTime(),
-      lat: this.state.pos.lat,
-      lng: this.state.pos.lng,
-      uri: this.state.uri
+    if(this.state.allowToMap){
+
+      var currentdate = new Date();
+      //console.log(currentdate.getTime());
+      var mappedSong = {
+        username: this.state.username,
+        songname: this.state.songname,
+        artist: this.state.artist,
+        genres: this.state.genres,
+        songimg: this.state.songimg,
+        year: currentdate.getFullYear(),
+        month:currentdate.getMonth()+1,
+        day:currentdate.getDate(),
+        timestamp: currentdate.getTime(),
+        // unixtime: currentdate.getTime(),
+        lat: this.state.pos.lat,
+        lng: this.state.pos.lng,
+        uri: this.state.uri
+      }
+      //firebase.database().ref('marker/').push(mappedSong);
+
+      //Formatting the genres parameter to match Rails+Postgres array standard.
+      var genresArrayString = "{";
+      this.state.genres.map(function(genre) {
+        genresArrayString += genre;
+        genresArrayString += ",";
+      })
+      genresArrayString = genresArrayString.substring(0, genresArrayString.length-1);
+      genresArrayString += "}";
+
+      var mappedSongForPost = {
+        username: this.state.username,
+        songname: this.state.songname,
+        artist: this.state.artist,
+        genres: genresArrayString,
+        songimg: this.state.songimg,
+        year: currentdate.getFullYear(),
+        month:currentdate.getMonth()+1,
+        // day:currentdate.getTime(),
+        day:currentdate.getDate(),
+        unixtime: currentdate.getTime(),
+        // unixtime: currentdate.getTime(),
+        lat: this.state.pos.lat,
+        lng: this.state.pos.lng,
+        uri: this.state.uri
+      }
+
+      axios.post('https://bestmusicmapapi.herokuapp.com/mapped_songs', mappedSongForPost)
+      .then(function (response) {
+        console.log(response);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+      
+      
+      this.cookies.set('previously_mapped_song', this.state.uri);
+      this.setState({
+        allowToMap: false
+      });
+      this.setMarkers(this.map, mappedSong);
+
+    } else{
+      this.setState({
+        error: true,
+        errorMsg: "Hmm... It seems like you already mapped this song."
+      })
     }
-    //firebase.database().ref('marker/').push(mappedSong);
-
-    //Formatting the genres parameter to match Rails+Postgres array standard.
-    var genresArrayString = "{";
-    this.state.genres.map(function(genre) {
-      genresArrayString += genre;
-      genresArrayString += ",";
-    })
-    genresArrayString = genresArrayString.substring(0, genresArrayString.length-1);
-    genresArrayString += "}";
-
-    var mappedSongForPost = {
-      username: this.state.username,
-      songname: this.state.songname,
-      artist: this.state.artist,
-      genres: genresArrayString,
-      songimg: this.state.songimg,
-      year: currentdate.getFullYear(),
-      month:currentdate.getMonth()+1,
-      // day:currentdate.getTime(),
-      day:currentdate.getDate(),
-      unixtime: currentdate.getTime(),
-      // unixtime: currentdate.getTime(),
-      lat: this.state.pos.lat,
-      lng: this.state.pos.lng,
-      uri: this.state.uri
-    }
-
-    axios.post('https://bestmusicmapapi.herokuapp.com/mapped_songs', mappedSongForPost)
-    .then(function (response) {
-      console.log(response);
-    })
-    .catch(function (error) {
-      console.log(error);
-    });
-
-    // var mappedSong = {
-    //   username: 'hello',
-    //   songname: 'hello',
-    //   artist: 'Ed Sheeran',
-    //   //genres: this.state.genres,
-    //   songimg: 'img',
-    //   year: currentdate.getFullYear(),
-    //   month:currentdate.getMonth()+1,
-    //   day:currentdate.getDate(),
-    //   //timestamp: currentdate.getTime(),
-    //   // unixtime: currentdate.getTime(),
-    //   lat: this.state.pos.lat,
-    //   lng: this.state.pos.lng,
-    //   uri: 'uri'
-    // }
-
-    // $.ajax({
-    //   url: 'https://bestmusicmapapi.herokuapp.com/mapped_songs',
-    //   type: 'POST',
-    //   data: mappedSong,
-    //   contentType: 'application/json; charset=utf-8',
-    //   success: function(response) {
-    //     console.log(response);
-    //   },
-    //   error: function(response) {
-    //     console.log(response);
-    //   }
-    // })
-
-    // $.ajax({
-    //   url: 'https://bestmusicmapapi.herokuapp.com/mapped_songs',
-    //   type: 'GET',
-    //   success: function(response) {
-    //     console.log(response);
-    //   },
-    //   error: function(response) {
-    //     console.log(response);
-    //   }
-    // })
-
-    // $.ajax({
-    //   url: 'http://localhost:3000/mapped_songs',
-    //   type: 'GET',
-    //   success: function(response) {
-    //     console.log(response);
-    //   },
-    //   error: function(response) {
-    //     console.log(response);
-    //   }
-    // })
-
-    // $.ajax({
-    //   url: 'https://pacific-reaches-20267.herokuapp.com/api/todos',
-    //   type: 'GET',
-    //   success: function(response) {
-    //     console.log(response);
-    //   },
-    //   error: function(response) {
-    //     console.log(response);
-    //   }
-    // })
-
-    this.setMarkers(this.map, mappedSong);
-
   }
 
   handleLocationError(browserHasGeolocation, infoWindow, pos) {
@@ -302,14 +254,27 @@ class Home extends React.Component {
           errorMsg: "Oops...error with loading data kbaflkalkjfkl"
         })
       }
+
+      if(response.data.item.uri === this.cookies.get('previously_mapped_song')){
+        console.log('checked previously_mapped_song')
+        this.setState({
+          allowToMap: false
+        })
+        console.log('checked allowToMap')
+        console.log(this.cookies.get('allow_to_map'));
+      } else {
+        this.setState({
+          allowToMap: true
+        })
+      }
       this.setState({
         songname: response.data.item.name,
         songimg: response.data.item.album.images[2].url,
         artist: response.data.item.artists[0].name,
         uri: response.data.item.uri,
-        error: false
-      })
-      // Retrieving genre data
+        error: false,
+      });
+        // Retrieving genre data
       axios.get(response.data.item.artists[0].href)
         .then(function(artistDetails) {
         console.log(typeof(artistDetails.data.genres));
