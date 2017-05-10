@@ -147,20 +147,38 @@ img[src^='./app/images/icon_bludot.png'] {
   position: absolute;
 }
 
-.wrapperAbout {
+/*.wrapperAbout {
   text-align: center;
   background-color: white;
   height: 100%;
   width: 100%;
   margin: 0;
-  /*position: fixed;*/
   color: #212121;
   font-family: "Open Sans";
   position: absolute;
+}*/
+
+.wrapperAbout {
+  text-align: center;
+  background-color: #212121;
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  /*position: fixed;*/
+  color: white;
+  font-family: "Open Sans";
+  /*position: absolute;*/
+  overflow: auto;
 }
 
-.aboutBody {
+/*.aboutBody {
   background-color: #f4fff4;
+  padding: 10px;
+  padding-bottom: 50px;
+}*/
+
+.aboutBody {
+  /*background-color: #f4fff4;*/
   padding: 10px;
   padding-bottom: 50px;
 }
