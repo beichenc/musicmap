@@ -301,6 +301,31 @@ class Home extends React.Component {
     }.bind(this))
   }
 
+  postUserDataToBackend(response) {
+    var birthday = "";
+    if (response.birthdate != undefined) {
+      birthday = response.birthdate;
+    }
+    var users = {
+      username: response.data.id,
+      email: response.data.email,
+      birthday: birthday,
+      producttype: response.data.product,
+      href: response.data.href,
+      uri: response.data.uri,
+      imageurl: response.data.images.url,
+      followers: response.data.followers.total,
+      visits: 1
+    }
+    axios.post('https://bestmusicmapapi.herokuapp.com/users', users)
+    .then(function (response) {
+      console.log(response);
+    })
+    .catch(function (error) {
+      console.log(error);
+    });
+  }
+
   getUserData() {
     // Retrieving user data
     axios({
@@ -310,6 +335,9 @@ class Home extends React.Component {
         'Authorization': 'Bearer ' + this.state.oauthDetails.access_token
       }
     }).then(function(response) {
+      console.log(response);
+
+      //this.postUserDataToBackend(response);
       this.setState({
         username: response.data.id
       })
