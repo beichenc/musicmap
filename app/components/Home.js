@@ -48,7 +48,8 @@ class Home extends React.Component {
       timeFilter: 'All',
       genreFilter: '',
       markerCounter: 0,
-      errorMsg: 'Oops...error with loading data'
+      errorMsg: 'Oops...error with loading data',
+      allowToMap: true
     };
     this.map = {};
     this.mapMarkers=[];
@@ -153,26 +154,36 @@ class Home extends React.Component {
 
   // Sends the song data to Firebase and calls setMarkers().
   mapSong() {
-    var currentdate = new Date();
-    //console.log(currentdate.getTime());
-    var mappedSong = {
-      username: this.state.username,
-      songname: this.state.songname,
-      artist: this.state.artist,
-      genres: this.state.genres,
-      songimg: this.state.songimg,
-      year: currentdate.getFullYear(),
-      month:currentdate.getMonth()+1,
-      day:currentdate.getDate(),
-      unixtime: currentdate.getTime(),
-      lat: this.state.pos.lat,
-      lng: this.state.pos.lng,
-      uri: this.state.uri
+    if(this.state.allowToMap){
+      var currentdate = new Date();
+      //console.log(currentdate.getTime());
+      var mappedSong = {
+        username: this.state.username,
+        songname: this.state.songname,
+        artist: this.state.artist,
+        genres: this.state.genres,
+        songimg: this.state.songimg,
+        year: currentdate.getFullYear(),
+        month:currentdate.getMonth()+1,
+        day:currentdate.getDate(),
+        unixtime: currentdate.getTime(),
+        lat: this.state.pos.lat,
+        lng: this.state.pos.lng,
+        uri: this.state.uri
+      }
+      firebase.database().ref('marker/').push(mappedSong);
+      this.cookies.set('previously_mapped_song', this.state.uri);
+      this.setState({
+        allowToMap: false
+      });
+      this.setMarkers(this.map, mappedSong);
+
+    } else{
+      this.setState({
+        error: true,
+        errorMsg: "Hmm... It seems like you already mapped this song."
+      })
     }
-    firebase.database().ref('marker/').push(mappedSong);
-
-    this.setMarkers(this.map, mappedSong);
-
   }
 
   handleLocationError(browserHasGeolocation, infoWindow, pos) {
@@ -204,14 +215,27 @@ class Home extends React.Component {
           errorMsg: "Oops...error with loading data kbaflkalkjfkl"
         })
       }
+
+      if(response.data.item.uri === this.cookies.get('previously_mapped_song')){
+        console.log('checked previously_mapped_song')
+        this.setState({
+          allowToMap: false
+        })
+        console.log('checked allowToMap')
+        console.log(this.cookies.get('allow_to_map'));
+      } else {
+        this.setState({
+          allowToMap: true
+        })
+      }
       this.setState({
         songname: response.data.item.name,
         songimg: response.data.item.album.images[2].url,
         artist: response.data.item.artists[0].name,
         uri: response.data.item.uri,
-        error: false
-      })
-      // Retrieving genre data
+        error: false,
+      });
+        // Retrieving genre data
       axios.get(response.data.item.artists[0].href)
         .then(function(artistDetails) {
         // console.log(artistDetails);
