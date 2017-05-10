@@ -208,8 +208,8 @@ class Home extends React.Component {
       .catch(function (error) {
         console.log(error);
       });
-      
-      
+
+
       this.cookies.set('previously_mapped_song', this.state.uri);
       this.setState({
         allowToMap: false
@@ -322,26 +322,15 @@ class Home extends React.Component {
     }.bind(this))
   }
 
-  getOwnData() {
+  getOwnData(callback) {
 
     // Testing own API
-    axios.get('https://pacific-reaches-20267.herokuapp.com/api/todos')
-      .then(function(response) {
-        console.log(response);
-      })
-      .catch(function(error) {
-        this.setState({
-          isLoading: false,
-          error: true
-        })
-      })
-
     axios.get('https://bestmusicmapapi.herokuapp.com/mapped_songs')
       .then(function(response) {
         console.log("response from own API");
         console.log(response);
-        console.log(response.data[12].genres[0]);
-      })
+        callback(response);
+      }.bind(this))
       .catch(function(error) {
         console.log(error);
         this.setState({
@@ -610,9 +599,9 @@ class Home extends React.Component {
     }.bind(this))
   }
 
-  getAllData() {
+  getAllSpotifyData() {
     // console.log(this.state.oauthDetails.access_token);
-    axios.all([this.getSongData(), this.getUserData(), this.getOwnData()])
+    axios.all([this.getSongData(), this.getUserData()])
       .then(function(acct, perms) {
         this.setState({
           dataLoading: false
@@ -712,13 +701,13 @@ class Home extends React.Component {
     // End slider
 
     var markerCounter = 0;
-    // Read data from firebase and set to map
-    firebase.database().ref('/marker').once('value').then(function(snapshot) {
-      snapshot.forEach(function(childSnapshot) {
-          this.setMarkers(this.map, childSnapshot.val())
-          markerCounter += 1;
-      }.bind(this))
-
+    // Read data from our backend and set to map
+    this.getOwnData(function(response) {
+      for (var index in response.data) {
+        var song = response.data[index];
+        this.setMarkers(this.map, song);
+        markerCounter += 1;
+      }
       this.setClusters();
     }.bind(this));
 
@@ -850,7 +839,7 @@ class Home extends React.Component {
         // Redirected from Login page since they are already signed in.
         if (access_token = 'access_token') {
           this.getNewAccessToken(function() {
-            this.getAllData();
+            this.getAllSpotifyData();
           }.bind(this), refresh_token);
         // Signing in first time - not redirected.
         } else {
@@ -862,7 +851,7 @@ class Home extends React.Component {
           this.setState({
             oauthDetails: oauthDetails
           }, () => {
-            this.getAllData();
+            this.getAllSpotifyData();
           })
         }
 
