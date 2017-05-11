@@ -303,22 +303,30 @@ class Home extends React.Component {
   }
 
   postUserDataToBackend(response) {
-    var birthday = "";
-    if (response.birthdate != undefined) {
-      birthday = response.birthdate;
+    var birthday = "not available";
+    var imageurl="no image";
+    var followers=0;
+    if (response.data.birthdate != undefined) {
+      birthday = response.data.birthdate;
     }
-    var users = {
+    if (response.data.images[0] != undefined) {
+      imageurl = response.data.images[0].url;
+    }
+    if (response.data.followers != undefined) {
+      followers = response.data.followers.total;
+    }
+    var user = {
       username: response.data.id,
       email: response.data.email,
       birthday: birthday,
       producttype: response.data.product,
       href: response.data.href,
       uri: response.data.uri,
-      imageurl: response.data.images.url,
-      followers: response.data.followers.total,
+      imageurl: imageurl,
+      followers: followers,
       visits: 1
     }
-    axios.post('https://bestmusicmapapi.herokuapp.com/users', users)
+    axios.post('https://bestmusicmapapi.herokuapp.com/users', user)
     .then(function (response) {
       console.log(response);
     })
@@ -327,6 +335,16 @@ class Home extends React.Component {
     });
   }
 
+  updateVisits(username){
+    axios.post('https://bestmusicmapapi.herokuapp.com/users/' + username)
+    .then(function (response) {
+      console.log('visits')
+      console.log(response.data.visits);
+    })
+    .catch(function (error) {
+      console.log(error);
+    });
+  }
   getUserData() {
     // Retrieving user data
     axios({
@@ -338,7 +356,20 @@ class Home extends React.Component {
     }).then(function(response) {
       console.log(response);
 
-      //this.postUserDataToBackend(response);
+      axios.get('https://bestmusicmapapi.herokuapp.com/users/check/' + response.data.id)
+        .then(function(checkresponse){
+          if(checkresponse.data.length === 0){
+            this.postUserDataToBackend(response);
+          } else{
+            if(this.cookies.get('visitedlogin')==='true'){
+            this.updateVisits(response.data.id);
+            }
+          }
+          this.cookies.set('visitedlogin','false');
+        }.bind(this))
+        .catch(function(error){
+          console.log(error);
+        })
       this.setState({
         username: response.data.id
       })
