@@ -17,8 +17,8 @@ var client_id = '3481c5ebeb68422e98110dd22f644daf'; // Your client id
 var client_secret = '5a02f4d8b20d467d96a58a39c59d1a13'; // Your secret
 // OBS change back to http://localhost:8888/callback or the real website later when uploaded, e.g. heroku.
 // var redirect_uri = 'http://192.168.1.172:8888/callback'; // Your redirect uri
-var redirect_uri = 'http://localhost:8888/callback';
-// var redirect_uri = 'https://bestmusicmap.herokuapp.com/callback';
+// var redirect_uri = 'http://localhost:8888/callback';
+var redirect_uri = 'https://bestmusicmap.herokuapp.com/callback';
 /**
  * Generates a random string containing numbers and letters
  * @param  {number} length The length of the string
