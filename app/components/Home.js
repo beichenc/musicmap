@@ -672,7 +672,7 @@ class Home extends React.Component {
       callback(markerCounter);
       this.setClusters();
     }.bind(this))])
-      .then(function(acct, perms) {
+      .then(axios.spread(function(acct, perms) {
         this.setState({
           dataLoading: false
         }, () => {
@@ -682,7 +682,7 @@ class Home extends React.Component {
             })
           }
         })
-      }.bind(this))
+      }.bind(this)));
   }
 
   // Slider functions
@@ -980,14 +980,16 @@ class Home extends React.Component {
             <nav id="c-menu--slide-left" className="c-menu c-menu--slide-left">
               <button className="c-menu__close">&larr; Close Menu</button>
               <ul className="c-menu__items">
-                <li className="c-menu__item"><a href="/#/about" className="c-menu__link aboutButton">About</a></li>
 
-                <li className="c-menu__item"><p>Filter by genre</p>
+                <li className="c-menu__item firstItem filterTitle"><p>Select genre</p>
                   <div><Search onSubmit={this.handleSubmit} placeholder="Search genre..."/></div>
                 </li>
-                <li className="c-menu__item"><p>Filter by time</p></li>
+                <li className="c-menu__item filterTitle"><p>Select time interval</p></li>
                 <div><TimeFilter onSubmit={this.handleSubmit}/></div>
-                <li className="c-menu__item"><button onClick={this.logOut}>Log out</button></li>
+                <li className="c-menu__item"><button className="btn btn-success logOutButton" onClick={this.logOut}>Log out</button></li>
+
+                <li className="c-menu__item"><a href="/#/about" className="c-menu__link aboutButton">About</a></li>
+
 
               </ul>
             </nav>

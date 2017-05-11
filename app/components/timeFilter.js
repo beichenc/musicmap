@@ -17,7 +17,7 @@ class TimeFilter extends React.Component {
   }
   render(){
     return (
-      <select className='form-control' onChange={this.handleChange}>
+      <select className='form-control timeDropdown' onChange={this.handleChange}>
         <option value='All'>All</option>
         <option value='Latest Day'>Latest Day</option>
         <option value='Latest Week'>Latest Week</option>
