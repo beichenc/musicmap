@@ -21,7 +21,7 @@ class About extends React.Component {
             <p className="aboutText">Ever feel like you've run out of good songs to listen to? Look no further! We present to you the Music Map (Atlastune?). Our vision is to make music inspiration available anywhere, anytime. </p>
             <p className="aboutText">Join the community! To share, listen, and get inspired!</p>
             <p className="aboutText">Our upcoming features: being able to "like" songs, being able to follow users that you think have good music taste, and a news feed where you can see recently mapped songs by the people you follow!</p>
-            <p className="aboutText">Have some feedback or ideas? We'd love to hear from you! Drop us an email at bestmusicmap@gmail.com, or fill in this short survey: <a className="surveyLink" href="https://docs.google.com/forms/d/e/1FAIpQLSduK5_w-fr1Zd1-kY1RnSvpn6BSwcilxllnxQUuAF6NveTk_w/viewform?usp=sf_link">here</a></p>
+            <p className="aboutText">Have some feedback or ideas? We'd love to hear from you! Drop us an email at bestmusicmap@gmail.com, or fill in this short survey: <a className="surveyLink" target="_blank" href="https://docs.google.com/forms/d/e/1FAIpQLSduK5_w-fr1Zd1-kY1RnSvpn6BSwcilxllnxQUuAF6NveTk_w/viewform?usp=sf_link">here</a>.</p>
             <p className="aboutText">&copy; Amy Chen, Beichen Chen 2017</p>
           </div>
         </div>

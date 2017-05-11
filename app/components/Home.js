@@ -986,10 +986,10 @@ class Home extends React.Component {
                 </li>
                 <li className="c-menu__item filterTitle"><p>Select time interval</p></li>
                 <div><TimeFilter onSubmit={this.handleSubmit}/></div>
-                <li className="c-menu__item"><button className="btn btn-success logOutButton" onClick={this.logOut}>Log out</button></li>
 
-                <li className="c-menu__item"><a href="/#/about" className="c-menu__link aboutButton">About</a></li>
+                  <li className="c-menu__item"><button className="btn btn-success btn-lg logOutButton" onClick={this.logOut}>Log out</button></li>
 
+                  <li className="c-menu__item"><a href="/#/about" className="c-menu__link aboutButton">About</a></li>
 
               </ul>
             </nav>
