@@ -37,6 +37,7 @@ class Home extends React.Component {
       genres: [],
       artist: "",
       username: "",
+      displayname: "null",
       oauthDetails: {},
       isLoggedIn: false,
       pos: {},
@@ -109,8 +110,15 @@ class Home extends React.Component {
       })
       genres = genres.substring(0, genres.length-2)
     }
-
-    var contentString = "<div class='infoWindow'><div class='songName'>"+mappedSong.songname+"</div><div><ul><li>Artist: "+mappedSong.artist+"</li><li>Genre: "+ genres +"</li><li>Mapped by: "+mappedSong.username+"</li><li>Date: "+mappedSong.year+"."+mappedSong.month+"."+mappedSong.day+"</li></ul></div><a href='"+mappedSong.uri+"'><button class='btn btn-success listenButton'>Listen</button></a><p class='like'>Like</p></div>";
+    if (mappedSong.displayname == "null" || mappedSong.displayname == undefined) {
+      // No display name, which means their account is not linked to Facebook, and their username is their id.
+      // So we use their username only.
+      var contentString = "<div class='infoWindow'><div class='songName'>"+mappedSong.songname+"</div><div><ul><li>Artist: "+mappedSong.artist+"</li><li>Genre: "+ genres +"</li><li>Mapped by: "+mappedSong.username+"</li><li>Date: "+mappedSong.year+"."+mappedSong.month+"."+mappedSong.day+"</li></ul></div><a href='"+mappedSong.uri+"'><button class='btn btn-success listenButton'>Listen</button></a><p class='like'>Like</p></div>";
+    } else {
+      // Display name not null, meaning it is their real name on Facebook. Their username will be gibberish
+      // We need to use both username and display name to uniquely identify them.
+      var contentString = "<div class='infoWindow'><div class='songName'>"+mappedSong.songname+"</div><div><ul><li>Artist: "+mappedSong.artist+"</li><li>Genre: "+ genres +"</li><li>Mapped by: "+mappedSong.username+" ("+mappedSong.displayname+")</li><li>Date: "+mappedSong.year+"."+mappedSong.month+"."+mappedSong.day+"</li></ul></div><a href='"+mappedSong.uri+"'><button class='btn btn-success listenButton'>Listen</button></a><p class='like'>Like</p></div>";
+    }
 
     var infowindow = new google.maps.InfoWindow({
       content: contentString,
@@ -159,6 +167,7 @@ class Home extends React.Component {
       var currentdate = new Date();
       var mappedSong = {
         username: this.state.username,
+        displayname: this.state.displayname,
         songname: this.state.songname,
         artist: this.state.artist,
         genres: this.state.genres,
@@ -185,6 +194,7 @@ class Home extends React.Component {
 
       var mappedSongForPost = {
         username: this.state.username,
+        displayname: this.state.displayname,
         songname: this.state.songname,
         artist: this.state.artist,
         genres: genresArrayString,
@@ -306,6 +316,7 @@ class Home extends React.Component {
     var birthday = "not available";
     var imageurl="no image";
     var followers=0;
+    var displayname = "null";
     if (response.data.birthdate != undefined) {
       birthday = response.data.birthdate;
     }
@@ -315,8 +326,13 @@ class Home extends React.Component {
     if (response.data.followers != undefined) {
       followers = response.data.followers.total;
     }
+    if (response.data.display_name != null) {
+      displayname = response.data.display_name;
+    }
+
     var user = {
       username: response.data.id,
+      displayname: displayname,
       email: response.data.email,
       birthday: birthday,
       producttype: response.data.product,
@@ -326,6 +342,8 @@ class Home extends React.Component {
       followers: followers,
       visits: 1
     }
+    console.log("user to post: ");
+    console.log(user);
     axios.post('https://bestmusicmapapi.herokuapp.com/users', user)
     .then(function (response) {
       console.log(response);
@@ -335,8 +353,8 @@ class Home extends React.Component {
     });
   }
 
-  updateVisits(username){
-    axios.post('https://bestmusicmapapi.herokuapp.com/users/' + username)
+  updateVisits(userid){
+    axios.post('https://bestmusicmapapi.herokuapp.com/users/' + userid)
     .then(function (response) {
       console.log('visits')
       console.log(response.data.visits);
@@ -370,8 +388,15 @@ class Home extends React.Component {
         .catch(function(error){
           console.log(error);
         })
+
+      var displayname = "null";
+      if (response.data.display_name != null) {
+        displayname = response.data.display_name;
+      }
+
       this.setState({
-        username: response.data.id
+        username: response.data.id,
+        displayname: displayname
       })
     }.bind(this))
     .catch(function(error) {
