@@ -157,7 +157,6 @@ class Home extends React.Component {
     if(this.state.allowToMap){
 
       var currentdate = new Date();
-      //console.log(currentdate.getTime());
       var mappedSong = {
         username: this.state.username,
         songname: this.state.songname,
@@ -192,10 +191,8 @@ class Home extends React.Component {
         songimg: this.state.songimg,
         year: currentdate.getFullYear(),
         month:currentdate.getMonth()+1,
-        // day:currentdate.getTime(),
         day:currentdate.getDate(),
         unixtime: currentdate.getTime(),
-        // unixtime: currentdate.getTime(),
         lat: this.state.pos.lat,
         lng: this.state.pos.lng,
         uri: this.state.uri
@@ -216,7 +213,7 @@ class Home extends React.Component {
       });
       this.setMarkers(this.map, mappedSong);
 
-    } else{
+    } else {
       this.setState({
         error: true,
         errorMsg: "Hmm... It seems like you already mapped this song."
@@ -232,7 +229,7 @@ class Home extends React.Component {
     infoWindow.open(map);
   }
 
-  getSongData() {
+  getCurrentSongData() {
     // Retrieving currently playing song
     console.log("access token when getting song every 30 sec: " + this.state.oauthDetails.access_token);
     axios({
@@ -255,6 +252,7 @@ class Home extends React.Component {
         })
       }
 
+      // Checking if currently playing song is different from previously mapped song.
       if(response.data.item.uri === this.cookies.get('previously_mapped_song')){
         console.log('checked previously_mapped_song')
         this.setState({
@@ -267,6 +265,8 @@ class Home extends React.Component {
           allowToMap: true
         })
       }
+
+      // Set state
       this.setState({
         songname: response.data.item.name,
         songimg: response.data.item.album.images[2].url,
@@ -274,7 +274,8 @@ class Home extends React.Component {
         uri: response.data.item.uri,
         error: false,
       });
-        // Retrieving genre data
+
+      // Retrieving genre data
       axios.get(response.data.item.artists[0].href)
         .then(function(artistDetails) {
         console.log(typeof(artistDetails.data.genres));
@@ -301,6 +302,49 @@ class Home extends React.Component {
     }.bind(this))
   }
 
+  postUserDataToBackend(response) {
+    var birthday = "not available";
+    var imageurl="no image";
+    var followers=0;
+    if (response.data.birthdate != undefined) {
+      birthday = response.data.birthdate;
+    }
+    if (response.data.images[0] != undefined) {
+      imageurl = response.data.images[0].url;
+    }
+    if (response.data.followers != undefined) {
+      followers = response.data.followers.total;
+    }
+    var user = {
+      username: response.data.id,
+      email: response.data.email,
+      birthday: birthday,
+      producttype: response.data.product,
+      href: response.data.href,
+      uri: response.data.uri,
+      imageurl: imageurl,
+      followers: followers,
+      visits: 1
+    }
+    axios.post('https://bestmusicmapapi.herokuapp.com/users', user)
+    .then(function (response) {
+      console.log(response);
+    })
+    .catch(function (error) {
+      console.log(error);
+    });
+  }
+
+  updateVisits(username){
+    axios.post('https://bestmusicmapapi.herokuapp.com/users/' + username)
+    .then(function (response) {
+      console.log('visits')
+      console.log(response.data.visits);
+    })
+    .catch(function (error) {
+      console.log(error);
+    });
+  }
   getUserData() {
     // Retrieving user data
     axios({
@@ -310,6 +354,22 @@ class Home extends React.Component {
         'Authorization': 'Bearer ' + this.state.oauthDetails.access_token
       }
     }).then(function(response) {
+      console.log(response);
+
+      axios.get('https://bestmusicmapapi.herokuapp.com/users/check/' + response.data.id)
+        .then(function(checkresponse){
+          if(checkresponse.data.length === 0){
+            this.postUserDataToBackend(response);
+          } else{
+            if(this.cookies.get('visitedlogin')==='true'){
+            this.updateVisits(response.data.id);
+            }
+          }
+          this.cookies.set('visitedlogin','false');
+        }.bind(this))
+        .catch(function(error){
+          console.log(error);
+        })
       this.setState({
         username: response.data.id
       })
@@ -322,9 +382,8 @@ class Home extends React.Component {
     }.bind(this))
   }
 
-  getOwnData(callback) {
+  getMappedSongsData(callback) {
 
-    // Testing own API
     axios.get('https://bestmusicmapapi.herokuapp.com/mapped_songs')
       .then(function(response) {
         console.log("response from own API");
@@ -599,9 +658,20 @@ class Home extends React.Component {
     }.bind(this))
   }
 
-  getAllSpotifyData() {
+  getAllData(callback) {
     // console.log(this.state.oauthDetails.access_token);
-    axios.all([this.getSongData(), this.getUserData()])
+
+    axios.all([this.getCurrentSongData(), this.getUserData(), this.getMappedSongsData(function(response) {
+      var markerCounter = 0;
+      // Read data from our backend and set to map
+      for (var index in response.data) {
+        var song = response.data[index];
+        this.setMarkers(this.map, song);
+        markerCounter += 1;
+      }
+      callback(markerCounter);
+      this.setClusters();
+    }.bind(this))])
       .then(function(acct, perms) {
         this.setState({
           dataLoading: false
@@ -700,113 +770,6 @@ class Home extends React.Component {
 
     // End slider
 
-    var markerCounter = 0;
-    // Read data from our backend and set to map
-    this.getOwnData(function(response) {
-      for (var index in response.data) {
-        var song = response.data[index];
-        this.setMarkers(this.map, song);
-        markerCounter += 1;
-      }
-      this.setClusters();
-    }.bind(this));
-
-    // Creating a map
-    this.map = new google.maps.Map(document.getElementById('map'), {
-      zoom: 15,
-      center: {lat: -34.397, lng: 150.644},
-      scrollwheel: false,
-      draggable: true
-    });
-
-    // Geolocation
-    if (navigator.geolocation) {
-      console.log("nagivator location");
-
-      var marker;
-
-      // On page load, get current position and center the map on that position.
-      navigator.geolocation.getCurrentPosition(function(position) {
-
-        console.log("got current position once");
-        // Not loading anymore
-        this.setState({
-          mapLoading: false
-        }, () => {
-          if (this.state.dataLoading === false) {
-            this.setState({
-              isLoading: false
-            })
-          }
-        })
-
-        this.ourSetPosition(position);
-        var pos = {
-          lat: position.coords.latitude,
-          lng: position.coords.longitude
-        };
-
-        var image = {
-          url: positionIcon,
-          // The origin for this image is (0, 0).
-          origin: new google.maps.Point(0, 0),
-          // The anchor for this image is the base of the flagpole at (0, 32).
-          anchor: new google.maps.Point(39, 39)
-        };
-        // console.log(markerCounter);
-        marker = new google.maps.Marker({
-          position: pos,
-          map: this.map,
-          icon: image,
-          zIndex: markerCounter + 1,
-          optimized: false
-        });
-
-        this.map.setCenter(pos)
-
-
-      }.bind(this), function(error) {
-        //this.handleLocationError(true, infoWindow, this.map.getCenter());
-        console.log(error);
-        this.setState({
-          isLoading: false,
-          mapError: true
-        })
-      }.bind(this), {
-        enableHighAccuracy: true
-      });
-
-      //Watch the user's position without centering the map each time.
-      this.watchId = navigator.geolocation.watchPosition(function(position) {
-        console.log("watch position");
-        this.ourSetPosition(position);
-        marker.setPosition({
-          lat: position.coords.latitude,
-          lng: position.coords.longitude
-        })
-      }.bind(this), function() {
-
-
-      }.bind(this), {
-        enableHighAccuracy: true
-      });
-
-      // Create a button to center the map.
-      var centerControlDiv = document.createElement('div');
-
-      this.CenterControl(centerControlDiv, this.map);
-      centerControlDiv.index = 1;
-      this.map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(centerControlDiv);
-
-    } else {
-      // Browser doesn't support Geolocation
-      //this.handleLocationError(false, infoWindow, this.map.getCenter());
-      this.setState({
-        isLoading: false,
-        mapError: true
-      })
-    }
-
     // var menu = require('../js/menu.js');
 
     // Spotify
@@ -836,10 +799,23 @@ class Home extends React.Component {
         }.bind(this), 900000)
         // 1800000 ms = 30 min
 
+        var markerCounter = 0;
+        // Read data from our backend and set to map
+        // this.getMappedSongsData(function(response) {
+        //   for (var index in response.data) {
+        //     var song = response.data[index];
+        //     this.setMarkers(this.map, song);
+        //     markerCounter += 1;
+        //   }
+        //   this.setClusters();
+        // }.bind(this));
+
         // Redirected from Login page since they are already signed in.
         if (access_token = 'access_token') {
           this.getNewAccessToken(function() {
-            this.getAllSpotifyData();
+            this.getAllData(function(markerCounter) {
+              markerCounter = markerCounter;
+            });
           }.bind(this), refresh_token);
         // Signing in first time - not redirected.
         } else {
@@ -851,27 +827,125 @@ class Home extends React.Component {
           this.setState({
             oauthDetails: oauthDetails
           }, () => {
-            this.getAllSpotifyData();
+            this.getAllData(function(markerCounter) {
+              markerCounter = markerCounter;
+            });
           })
         }
 
         var songLastTime = new Date().getTime();
         // Get currently playing song every 30 sec to update
         setInterval(function() {
-          this.getSongData();
+          this.getCurrentSongData();
           var currentTime = new Date().getTime();
           var minutesSinceLast = ((currentTime - songLastTime) / 1000)/60
           console.log("Refreshed current song, minutes since last: " + minutesSinceLast);
           songLastTime = currentTime;
         }.bind(this), 30000)
 
+        // Creating a map
+        this.map = new google.maps.Map(document.getElementById('map'), {
+          zoom: 15,
+          center: {lat: -34.397, lng: 150.644},
+          scrollwheel: false,
+          draggable: true
+        });
+
+        // Geolocation
+        if (navigator.geolocation) {
+          console.log("nagivator location");
+
+          var marker;
+
+          // On page load, get current position and center the map on that position.
+          navigator.geolocation.getCurrentPosition(function(position) {
+
+            console.log("got current position once");
+            // Not loading anymore
+            this.setState({
+              mapLoading: false
+            }, () => {
+              if (this.state.dataLoading === false) {
+                this.setState({
+                  isLoading: false
+                })
+              }
+            })
+
+            this.ourSetPosition(position);
+            var pos = {
+              lat: position.coords.latitude,
+              lng: position.coords.longitude
+            };
+
+            var image = {
+              url: positionIcon,
+              // The origin for this image is (0, 0).
+              origin: new google.maps.Point(0, 0),
+              // The anchor for this image is the base of the flagpole at (0, 32).
+              anchor: new google.maps.Point(39, 39)
+            };
+            // console.log(markerCounter);
+            marker = new google.maps.Marker({
+              position: pos,
+              map: this.map,
+              icon: image,
+              zIndex: markerCounter + 1,
+              optimized: false
+            });
+
+            this.map.setCenter(pos)
+
+
+          }.bind(this), function(error) {
+            //this.handleLocationError(true, infoWindow, this.map.getCenter());
+            console.log(error);
+            this.setState({
+              isLoading: false,
+              mapError: true
+            })
+          }.bind(this), {
+            enableHighAccuracy: true
+          });
+
+          //Watch the user's position without centering the map each time.
+          this.watchId = navigator.geolocation.watchPosition(function(position) {
+            console.log("watch position");
+            this.ourSetPosition(position);
+            marker.setPosition({
+              lat: position.coords.latitude,
+              lng: position.coords.longitude
+            })
+          }.bind(this), function() {
+
+
+          }.bind(this), {
+            enableHighAccuracy: true
+          });
+
+          // Create a button to center the map.
+          var centerControlDiv = document.createElement('div');
+
+          this.CenterControl(centerControlDiv, this.map);
+          centerControlDiv.index = 1;
+          this.map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(centerControlDiv);
+
+        } else {
+          // Browser doesn't support Geolocation
+          //this.handleLocationError(false, infoWindow, this.map.getCenter());
+          this.setState({
+            isLoading: false,
+            mapError: true
+          })
+        }
+
       } else {
           // Redirect user to login page - don't really know if this works cause I dunno how to test it
           //window.location.href = '#/';
       }
     }
-    console.log(this.cookies.get('atlastune_refresh_token'));
-    console.log(this.state.oauthDetails.access_token);
+    // console.log(this.cookies.get('atlastune_refresh_token'));
+    // console.log(this.state.oauthDetails.access_token);
   }
 
   componentWillUnmount() {
