@@ -151,6 +151,10 @@ img[src^='./app/images/icon_bludot.png'] {
   margin-top: 20px;
 }
 
+.secondItem{
+  margin-top: 20px;
+}
+
 .aboutButton {
   position: absolute;
   bottom: 0;

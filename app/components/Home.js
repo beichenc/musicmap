@@ -1006,11 +1006,12 @@ class Home extends React.Component {
               <button className="c-menu__close">&larr; Close Menu</button>
               <ul className="c-menu__items">
 
-                <li className="c-menu__item firstItem filterTitle"><p>Select genre</p>
+                <li className="c-menu__item firstItem filterTitle"><p>Select time interval</p></li>
+                <div><TimeFilter onSubmit={this.handleSubmit}/></div>
+
+                <li className="c-menu__item secondItem filterTitle"><p>Select genre</p>
                   <div><Search onSubmit={this.handleSubmit} placeholder="Search genre..."/></div>
                 </li>
-                <li className="c-menu__item filterTitle"><p>Select time interval</p></li>
-                <div><TimeFilter onSubmit={this.handleSubmit}/></div>
 
                   <li className="c-menu__item"><button className="btn btn-success btn-lg logOutButton" onClick={this.logOut}>Log out</button></li>
 
