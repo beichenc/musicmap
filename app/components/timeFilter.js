@@ -13,17 +13,21 @@ class TimeFilter extends React.Component {
     this.setState({
       time: event.target.value
     })
-    this.props.onSubmit(event.target.value, 'Time');
+    this.props.onSubmit(event.target.value);
   }
   render(){
     return (
-      <select className='form-control timeDropdown' onChange={this.handleChange}>
-        <option value='All'>All</option>
-        <option value='86400000'>Latest Day</option>
-        <option value='604800000'>Latest Week</option>
-        <option value='2628000000'>Latest Month</option>
-        <option value='31540000000'>Latest Year</option>
-      </select>
+      <div>
+        <li className="c-menu__item firstItem filterTitle"><p>Select time interval</p></li>
+
+        <select className='form-control timeDropdown' onChange={this.handleChange}>
+          <option value='All'>All</option>
+          <option value='86400000'>Latest Day</option>
+          <option value='604800000'>Latest Week</option>
+          <option value='2628000000'>Latest Month</option>
+          <option value='31540000000'>Latest Year</option>
+        </select>
+      </div>
     )
   }
 }

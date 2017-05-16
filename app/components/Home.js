@@ -23,9 +23,10 @@ class Home extends React.Component {
 
     this.mapSong = this.mapSong.bind(this);
     this.componentDidMount = this.componentDidMount.bind(this);
-    this.handleSubmit = this.handleSubmit.bind(this);
-    this.setMatchingTime = this.setMatchingTime.bind(this);
-    this.setMatchingGenres = this.setMatchingGenres.bind(this);
+    this.handleSubmitTime = this.handleSubmitTime.bind(this);
+    this.handleSubmitSearch = this.handleSubmitSearch.bind(this);
+    // this.setMatchingTime = this.setMatchingTime.bind(this);
+    // this.setMatchingGenres = this.setMatchingGenres.bind(this);
     this.logOut = this.logOut.bind(this);
 
     console.log("constructor");
@@ -529,162 +530,161 @@ class Home extends React.Component {
     // this.markerCluster.setMap(null);
   }
 
-  setMatchingTimeAfterCheckingGenres(currentTime, childSnapshot) {
-    // Check time filter
-    switch(this.state.timeFilter) {
-      case 'Latest Year':
-        if(currentTime.getTime() - childSnapshot.val().unixtime < 31540000000){
-          this.setMarkers(this.map, childSnapshot.val());
-        }
-        break;
-      case 'Latest Month':
-        if(currentTime.getTime() - childSnapshot.val().unixtime < 2628000000){
-          this.setMarkers(this.map, childSnapshot.val());
-        }
-        break;
-      case 'Latest Week':
-        if(currentTime.getTime() - childSnapshot.val().unixtime < 604800000){
-          this.setMarkers(this.map, childSnapshot.val());
-        }
-        break;
-      case 'Latest Day':
-        if(currentTime.getTime() - childSnapshot.val().unixtime < 86400000){
-          this.setMarkers(this.map, childSnapshot.val());
-        }
-        break;
-      case 'All':
-        this.setMarkers(this.map, childSnapshot.val());
-    }
-  }
+  // setMatchingTimeAfterCheckingGenres(currentTime, childSnapshot) {
+  //   // Check time filter
+  //   switch(this.state.timeFilter) {
+  //     case 'Latest Year':
+  //       if(currentTime.getTime() - childSnapshot.val().unixtime < 31540000000){
+  //         this.setMarkers(this.map, childSnapshot.val());
+  //       }
+  //       break;
+  //     case 'Latest Month':
+  //       if(currentTime.getTime() - childSnapshot.val().unixtime < 2628000000){
+  //         this.setMarkers(this.map, childSnapshot.val());
+  //       }
+  //       break;
+  //     case 'Latest Week':
+  //       if(currentTime.getTime() - childSnapshot.val().unixtime < 604800000){
+  //         this.setMarkers(this.map, childSnapshot.val());
+  //       }
+  //       break;
+  //     case 'Latest Day':
+  //       if(currentTime.getTime() - childSnapshot.val().unixtime < 86400000){
+  //         this.setMarkers(this.map, childSnapshot.val());
+  //       }
+  //       break;
+  //     case 'All':
+  //       this.setMarkers(this.map, childSnapshot.val());
+  //   }
+  // }
+  //
+  // setMatchingGenres(searchingGenre){
+  //   this.setState({
+  //     genreFilter: searchingGenre
+  //   })
+  //
+  //   var currentTime = new Date();
+  //
+  //   firebase.database().ref('/marker').once('value').then(function(snapshot) {
+  //     snapshot.forEach(function(childSnapshot) {
+  //       // console.log(childSnapshot.key);
+  //       // Check genre filter
+  //       // If genres is not empty
+  //       if (childSnapshot.val().genres != undefined) {
+  //         var matchesGenre = false;
+  //         childSnapshot.val().genres.map(function(genre){
+  //
+  //           if(genre.includes(searchingGenre)){
+  //             matchesGenre = true;
+  //           }
+  //         }.bind(this))
+  //         if (matchesGenre) {
+  //           this.setMatchingTimeAfterCheckingGenres(currentTime, childSnapshot);
+  //         }
+  //       // If genres is empty
+  //       } else {
+  //         this.setMatchingTimeAfterCheckingGenres(currentTime, childSnapshot);
+  //       }
+  //
+  //     }.bind(this))
+  //
+  //     this.setClusters();
+  //
+  //   }.bind(this));
+  // }
+  //
+  // filterSnapshotAndMap(snapshot, currentTime, timeInterval) {
+  //   snapshot.forEach(function(childSnapshot) {
+  //     //Check time filter
+  //     if(currentTime.getTime() - childSnapshot.val().unixtime < timeInterval){
+  //       // If genres is not empty
+  //       if (childSnapshot.val().genres != undefined) {
+  //         // Check genre filter
+  //         var matchesGenre = false;
+  //         childSnapshot.val().genres.map(function(genre){
+  //           if(genre.includes(this.state.genreFilter)){
+  //             matchesGenre = true;
+  //           }
+  //         }.bind(this))
+  //         if (matchesGenre) {
+  //           this.setMarkers(this.map, childSnapshot.val());
+  //         }
+  //       // If genre is empty
+  //       } else {
+  //         this.setMarkers(this.map, childSnapshot.val());
+  //       }
+  //     }
+  //   }.bind(this))
+  // }
+  //
+  // setMatchingTime(searchingTime){
+  //   this.setState({
+  //     timeFilter: searchingTime
+  //   })
+  //
+  //   firebase.database().ref('/marker').once('value').then(function(snapshot) {
+  //     var currentTime = new Date();
+  //     switch(searchingTime) {
+  //       case 'Latest Year':
+  //         this.filterSnapshotAndMap(snapshot, currentTime, 31540000000);
+  //         break;
+  //       case 'Latest Month':
+  //         this.filterSnapshotAndMap(snapshot, currentTime, 2628000000);
+  //         break;
+  //       case 'Latest Week':
+  //         this.filterSnapshotAndMap(snapshot, currentTime, 604800000);
+  //         break;
+  //       case 'Latest Day':
+  //         this.filterSnapshotAndMap(snapshot, currentTime, 86400000);
+  //         break;
+  //       case 'All':
+  //         this.filterSnapshotAndMap(snapshot, currentTime, currentTime.getTime());
+  //     }
+  //     this.setClusters();
+  //
+  //   }.bind(this));
+  // }
 
-  setMatchingGenres(searchingGenre){
-    this.setState({
-      genreFilter: searchingGenre
-    })
-
-    var currentTime = new Date();
-
-    firebase.database().ref('/marker').once('value').then(function(snapshot) {
-      snapshot.forEach(function(childSnapshot) {
-        // console.log(childSnapshot.key);
-        // Check genre filter
-        // If genres is not empty
-        if (childSnapshot.val().genres != undefined) {
-          var matchesGenre = false;
-          childSnapshot.val().genres.map(function(genre){
-
-            if(genre.includes(searchingGenre)){
-              matchesGenre = true;
-            }
-          }.bind(this))
-          if (matchesGenre) {
-            this.setMatchingTimeAfterCheckingGenres(currentTime, childSnapshot);
-          }
-        // If genres is empty
-        } else {
-          this.setMatchingTimeAfterCheckingGenres(currentTime, childSnapshot);
-        }
-
-      }.bind(this))
-
-      this.setClusters();
-
-    }.bind(this));
-  }
-
-  filterSnapshotAndMap(snapshot, currentTime, timeInterval) {
-    snapshot.forEach(function(childSnapshot) {
-      //Check time filter
-      if(currentTime.getTime() - childSnapshot.val().unixtime < timeInterval){
-        // If genres is not empty
-        if (childSnapshot.val().genres != undefined) {
-          // Check genre filter
-          var matchesGenre = false;
-          childSnapshot.val().genres.map(function(genre){
-            if(genre.includes(this.state.genreFilter)){
-              matchesGenre = true;
-            }
-          }.bind(this))
-          if (matchesGenre) {
-            this.setMarkers(this.map, childSnapshot.val());
-          }
-        // If genre is empty
-        } else {
-          this.setMarkers(this.map, childSnapshot.val());
-        }
-      }
-    }.bind(this))
-  }
-
-  setMatchingTime(searchingTime){
-    this.setState({
-      timeFilter: searchingTime
-    })
-
-    firebase.database().ref('/marker').once('value').then(function(snapshot) {
-      var currentTime = new Date();
-      switch(searchingTime) {
-        case 'Latest Year':
-          this.filterSnapshotAndMap(snapshot, currentTime, 31540000000);
-          break;
-        case 'Latest Month':
-          this.filterSnapshotAndMap(snapshot, currentTime, 2628000000);
-          break;
-        case 'Latest Week':
-          this.filterSnapshotAndMap(snapshot, currentTime, 604800000);
-          break;
-        case 'Latest Day':
-          this.filterSnapshotAndMap(snapshot, currentTime, 86400000);
-          break;
-        case 'All':
-          this.filterSnapshotAndMap(snapshot, currentTime, currentTime.getTime());
-      }
-      this.setClusters();
-
-    }.bind(this));
-  }
-
-
-
-  handleSubmit(searchingValue, searchingType){
+  handleSubmitTime(searchingTime) {
     this.removeMarkers();
-    // if(searchingType == 'Genre'){
-    //   this.setMatchingGenres(searchingValue);
-    // } else {
-    //   this.setMatchingTime(searchingValue);
-    // }
-    if (searchingType == 'Genre') {
-      if(searchingValue!=""){
-        this.setState({
-          genreFilter: searchingValue
-        }, () => {this.getFilteredSongs()})
-      }else{
-        this.setState({
-          genreFilter:'all'
-        }, () => {this.getFilteredSongs()})
-      }
-    } else if (searchingType == 'Time') {
-        if(searchingValue == "All"){
-          this.setState({
-            timeFilter:0
-          }, () => {this.getFilteredSongs()})
-        }else{
-          this.setState({
-            timeFilter: new Date().getTime() - parseInt(searchingValue)
-          }, () => {this.getFilteredSongs()})
-        }
-    } else if (searchingType == 'Username') {
-        if(searchingValue!=""){
-        this.setState({
-          userFilter: searchingValue
-        }, () => {this.getFilteredSongs()})
-      }else{
-        this.setState({
-          userFilter: 'all'
-        }, () => {this.getFilteredSongs()})
-      }
+    var timeFilter;
+    if (searchingTime == "All") {
+      timeFilter = 0
+    } else {
+      timeFilter = new Date().getTime() - parseInt(searchingTime);
+    }
+    this.setState({
+      timeFilter: timeFilter
+    }, () => {
+      this.getFilteredSongs();
+    })
+  }
+
+  handleSubmitSearch(searchingGenre, searchingUser){
+    this.removeMarkers();
+    var genreFilter;
+    var userFilter;
+    // var timeFilter;
+    if (searchingGenre == "") {
+      genreFilter = "all";
+    } else {
+      genreFilter = searchingGenre;
     }
 
+    if (searchingUser == "") {
+      userFilter = "all";
+    } else {
+      userFilter = searchingUser;
+    }
+
+
+    this.setState({
+      genreFilter: genreFilter,
+      userFilter: userFilter,
+      // timeFilter: timeFilter
+    }, () => {
+      this.getFilteredSongs();
+    })
   }
 
   getFilteredSongs(){
@@ -1056,12 +1056,8 @@ class Home extends React.Component {
               <button className="c-menu__close">&larr; Close Menu</button>
               <ul className="c-menu__items">
 
-                <li className="c-menu__item firstItem filterTitle"><p>Select time interval</p></li>
-                <div><TimeFilter onSubmit={this.handleSubmit}/></div>
-
-                <li className="c-menu__item secondItem filterTitle"><p>Select genre</p>
-                  <div><Search onSubmit={this.handleSubmit} placeholder="Search genre..."/></div>
-                </li>
+                  <TimeFilter onSubmit={this.handleSubmitTime}/>
+                  <Search onSubmit={this.handleSubmitSearch}/>
 
                   <li className="c-menu__item"><button className="btn btn-success btn-lg logOutButton" onClick={this.logOut}>Log out</button></li>
 
