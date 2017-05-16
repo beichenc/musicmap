@@ -19,10 +19,10 @@ class TimeFilter extends React.Component {
     return (
       <select className='form-control timeDropdown' onChange={this.handleChange}>
         <option value='All'>All</option>
-        <option value='Latest Day'>Latest Day</option>
-        <option value='Latest Week'>Latest Week</option>
-        <option value='Latest Month'>Latest Month</option>
-        <option value='Latest Year'>Latest Year</option>
+        <option value='86400000'>Latest Day</option>
+        <option value='604800000'>Latest Week</option>
+        <option value='2628000000'>Latest Month</option>
+        <option value='31540000000'>Latest Year</option>
       </select>
     )
   }

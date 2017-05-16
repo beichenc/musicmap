@@ -46,8 +46,9 @@ class Home extends React.Component {
       isLoading: true,
       error: false,
       mapError: false,
-      timeFilter: 'All',
-      genreFilter: '',
+      timeFilter: 0,
+      genreFilter: 'all',
+      userFilter: 'all',
       markerCounter: 0,
       errorMsg: 'Oops...error with loading data',
       allowToMap: true
@@ -642,13 +643,62 @@ class Home extends React.Component {
 
     }.bind(this));
   }
+
+
+
   handleSubmit(searchingValue, searchingType){
     this.removeMarkers();
-    if(searchingType == 'Genre'){
-      this.setMatchingGenres(searchingValue);
-    } else {
-      this.setMatchingTime(searchingValue);
+    // if(searchingType == 'Genre'){
+    //   this.setMatchingGenres(searchingValue);
+    // } else {
+    //   this.setMatchingTime(searchingValue);
+    // }
+    if (searchingType == 'Genre') {
+      if(searchingValue!=""){
+        this.setState({
+          genreFilter: searchingValue
+        }, () => {this.getFilteredSongs()})
+      }else{
+        this.setState({
+          genreFilter:'all'
+        }, () => {this.getFilteredSongs()})
+      }
+    } else if (searchingType == 'Time') {
+        if(searchingValue == "All"){
+          this.setState({
+            timeFilter:0
+          }, () => {this.getFilteredSongs()})
+        }else{
+          this.setState({
+            timeFilter: new Date().getTime() - parseInt(searchingValue)
+          }, () => {this.getFilteredSongs()})
+        }
+    } else if (searchingType == 'Username') {
+        if(searchingValue!=""){
+        this.setState({
+          userFilter: searchingValue
+        }, () => {this.getFilteredSongs()})
+      }else{
+        this.setState({
+          userFilter: 'all'
+        }, () => {this.getFilteredSongs()})
+      }
     }
+
+  }
+
+  getFilteredSongs(){
+    axios.get('https://bestmusicmapapi.herokuapp.com/mapped_songs/filter/'+this.state.genreFilter+'/'+this.state.userFilter+'/'+this.state.timeFilter)
+      .then(function(response){
+        for (var index in response.data){
+          var song = response.data[index];
+          this.setMarkers(this.map, song)
+        }
+        this.setClusters()
+      }.bind(this))
+      .catch(function(error){
+        console.log(error);
+      })
   }
 
   logOut(){
