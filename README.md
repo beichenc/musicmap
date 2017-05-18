@@ -6,4 +6,13 @@ This Music Map project going to be a website containing a map there you can map 
 
 It's also going to be a news feed with rencently mapped songs of users you have followed. To share, to listen, to get inspired!
 
-Go, Listen, Map! 
+Go, Listen, Map!
+
+## Getting started on your local system
+
+1. Clone this repository and go into the folder.
+2. Run `npm install`.
+3. Run `webpack -p`.
+4. Go into dist/app.js and check that the `redirect_uri` is `http://localhost:8888/callback`, if not change it to this. Setting this will make sure Spotify's authentication redirects upon completion to your localhost server instead of our production website.
+5. Run `node dist/app.js`.
+6. Go to `localhost:8888` in your browser and you should see the site running.
