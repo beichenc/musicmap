@@ -288,8 +288,13 @@ class Home extends React.Component {
       });
 
       // Retrieving genre data
-      axios.get(response.data.item.artists[0].href)
-        .then(function(artistDetails) {
+      axios({
+        method: 'get',
+        url: response.data.item.artists[0].href,
+        headers: {
+          'Authorization': 'Bearer ' + this.state.oauthDetails.access_token
+        }
+      }).then(function(artistDetails) {
         console.log(typeof(artistDetails.data.genres));
         console.log(artistDetails.data.genres);
         this.setState({
