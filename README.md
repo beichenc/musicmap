@@ -20,3 +20,9 @@ Go, Listen, Map!
 ## Backend
 
 Here you can find the repository to our backend: [Music Map Backend](https://github.com/beichenc/MusicMapAPI).
+
+## Screenshots
+
+![alt text](https://github.com/beichenc/MusicMap/blob/master/Skärmavbild%202018-11-14%20kl.%2013.27.40.png)
+
+![alt text](https://github.com/beichenc/MusicMap/blob/master/Skärmavbild%202018-11-14%20kl.%2013.31.24.png)
